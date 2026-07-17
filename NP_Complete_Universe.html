@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NP-Complete Universe — 8 Geometries</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020617;color:#E2E8F0;font-family:'Inter',-apple-system,sans-serif;padding:10px}
+.hdr{text-align:center;margin-bottom:10px}
+.hdr h1{font-size:17px;font-weight:800;background:linear-gradient(135deg,#3B82F6,#8B5CF6,#EC4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hdr p{color:#64748B;font-size:9px;margin-top:2px}
+.row{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;justify-content:center}
+.row button{padding:2px 6px;border-radius:3px;border:1px solid #334155;background:#0F172A;color:#94A3B8;cursor:pointer;font-size:8px;font-weight:600}
+.row button.on{background:#1E40AF;color:#fff}
+.fin{width:100%;padding:5px 8px;border-radius:4px;border:1px solid #334155;background:#0F172A;color:#E2E8F0;font-family:monospace;font-size:10px;margin-bottom:6px;outline:none}
+.pnl{background:#0F172A;border-radius:5px;border:1px solid #1E293B;overflow:hidden;margin-bottom:5px}
+.ph{padding:4px 7px;background:#1E293B;font-size:9px;font-weight:800;display:flex;align-items:center;gap:4px}
+.ph .bg{font-size:7px;color:#64748B;font-weight:400}
+.pb{padding:6px}
+.sl{font-size:8px;color:#94A3B8;margin-bottom:3px;font-weight:600;letter-spacing:.5px}
+.vbs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:7px}
+.vb{padding:3px 8px;border-radius:3px;border:none;cursor:pointer;font-weight:700;font-size:10px;font-family:monospace}
+.vb.u{background:#1E293B;color:#64748B}.vb.t{background:#065F46;color:#fff}.vb.f{background:#7F1D1D;color:#fff}
+.cr{display:flex;align-items:center;gap:3px;padding:2px 5px;border-radius:3px;margin-bottom:2px;font-size:9px}
+.cr.u{background:#1E293B}.cr.s{background:#052e16}.cr.n{background:#450a0a}
+.ct{font-family:monospace;font-size:9px;flex:1}.ci{font-size:11px;margin-left:auto}
+.lu{color:#94A3B8}.lt{color:#4ADE80;font-weight:800}.lf{color:#F87171}
+.rb{margin-top:4px;padding:3px;border-radius:3px;text-align:center;font-weight:800;font-size:9px}
+.rb.s{background:#052e16;color:#4ADE80}.rb.n{background:#450a0a;color:#F87171}
+.ar{text-align:center;color:#334155;font-size:7px;font-family:monospace;padding:0}
+.gsvg{background:#0F172A;border-radius:3px;display:block;width:100%}
+.gr{margin-top:3px;padding:2px 5px;border-radius:3px;text-align:center;font-size:8px;font-weight:700}
+.gr.y{background:#052e16;color:#4ADE80}.gr.n{background:#1E293B;color:#94A3B8}
+.solver{display:flex;gap:3px;align-items:center;margin-bottom:6px;flex-wrap:wrap;justify-content:center}
+.solver button{padding:2px 8px;border-radius:3px;border:1px solid #334155;cursor:pointer;font-weight:700;font-size:8px}
+.prog{background:#0F172A;border-radius:3px;border:1px solid #1E293B;padding:4px 6px;margin-bottom:6px;display:none}
+.prog.show{display:block}
+.pbar-w{background:#1E293B;border-radius:2px;height:4px;margin:2px 0;overflow:hidden}
+.pbar{height:100%;border-radius:2px;transition:width .05s}
+.pbar.srch{background:#8B5CF6}.pbar.found{background:#4ADE80}.pbar.exh{background:#F87171}
+.pi{display:flex;justify-content:space-between;font-size:7px;color:#94A3B8;font-family:monospace}
+.pr{text-align:center;font-weight:800;font-size:9px;margin-top:2px}
+.pr.sat{color:#4ADE80}.pr.unsat{color:#F87171}.pr.srch{color:#8B5CF6}
+.lp{background:#0F172A;border-radius:5px;border:1px solid #1E293B;padding:6px;margin-bottom:6px}
+.lg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:4px}
+.lc{background:#1E293B;border-radius:3px;padding:5px;text-align:center}
+.lc .lv{font-size:16px;font-weight:800}.lc .ll{font-size:7px;color:#64748B;font-weight:600}
+.rl{text-align:center;font-family:monospace;font-size:9px;padding:3px;border-radius:3px}
+.rl-ok{background:#052e16;color:#4ADE80}.rl-v{background:#450a0a;color:#F87171}
+.ncw{text-align:center;font-size:8px;padding:2px 5px;border-radius:3px;margin-top:3px;background:#451a03;color:#F59E0B;display:none}
+.ncw.show{display:block}
+.ss-table{width:100%;border-collapse:collapse;font-size:8px;font-family:monospace}
+.ss-table th{background:#1E293B;padding:2px 3px;font-weight:700;text-align:center;border:1px solid #0F172A}
+.ss-table td{padding:2px 3px;text-align:center;border:1px solid #0F172A}
+.ss-sel{background:#065F46;color:#4ADE80;font-weight:800}
+.ss-unsel{background:#1E293B;color:#475569}
+.ss-hit{background:#052e16;color:#4ADE80;font-weight:800}
+.ss-miss{background:#450a0a;color:#F87171;font-weight:800}
+.ss-v1{color:#4ADE80}.ss-v0{color:#1E293B}
+.note{padding:6px;background:#0F172A;border-radius:3px;border:1px solid #1E293B;font-size:8px;color:#CBD5E1;line-height:1.3;margin-bottom:5px}
+.note b{color:#E2E8F0}
+.tabs{display:flex;gap:3px;margin-bottom:5px;flex-wrap:wrap;justify-content:center}
+.tabs button{padding:3px 8px;border-radius:3px;border:1px solid #334155;background:#0F172A;color:#64748B;cursor:pointer;font-size:8px;font-weight:700}
+.tabs button.on{border-color:#8B5CF6;color:#E2E8F0;background:#1E1B4B}
+.tab-content{display:none}.tab-content.show{display:block}
+</style>
+</head>
+<body>
+<div class="hdr"><h1>NP-Complete Universe</h1><p>8 geometries of one problem — navigate, not compute</p></div>
+<div class="row" id="exs"></div>
+<div class="row">
+<button onclick="genR(3)">Rand 3v</button><button onclick="genR(4)">Rand 4v</button>
+<button onclick="genR(5)">Rand 5v</button><button onclick="genR(8)">Rand 8v</button>
+</div>
+<input class="fin" id="fin"/>
+<div class="lp"><div class="lg">
+<div class="lc"><div class="lv" id="lv1">—</div><div class="ll">Λ load</div></div>
+<div class="lc"><div class="lv" id="lv2">—</div><div class="ll">Compress</div></div>
+<div class="lc"><div class="lv" id="lv3">—</div><div class="ll">Phase</div></div>
+</div><div class="rl" id="rl">Λ·P ≤ C = ln(10)</div><div class="ncw" id="ncw"></div></div>
+<div class="solver">
+<button style="color:#3B82F6" onclick="sStep()">⏯Step</button>
+<button style="color:#10B981" id="ab" onclick="sAuto()">▶Auto</button>
+<button style="color:#F87171" onclick="sStop()">⏹</button>
+<button style="color:#94A3B8" onclick="sReset()">↺</button>
+<div style="font-size:7px;color:#64748B"><input type="range" id="sp" min="1" max="100" value="75" style="width:40px;accent-color:#8B5CF6"/></div>
+</div>
+<div class="prog" id="prog"><div class="pi"><span id="ps">0</span><span id="pt"></span></div>
+<div class="pbar-w"><div class="pbar srch" id="pb" style="width:0%"></div></div>
+<div class="pi"><span id="pc">—</span><span id="pf" style="color:#F87171"></span></div>
+<div class="pr srch" id="prr"></div></div>
+
+<!-- SAT always visible -->
+<div class="pnl"><div class="ph"><span style="color:#3B82F6">①</span> SAT <span class="bg" id="sb"></span></div>
+<div class="pb"><div class="sl">VARIABLES</div><div class="vbs" id="vb"></div><div class="sl">CLAUSES</div><div id="cll"></div><div id="sr"></div></div></div>
+
+<!-- Tabs -->
+<div class="tabs" id="tabs">
+<button class="on" onclick="showTab(0)">② Clique</button>
+<button onclick="showTab(1)">③ Ind.Set</button>
+<button onclick="showTab(2)">④ V.Cover</button>
+<button onclick="showTab(3)">⑤ 3-Color</button>
+<button onclick="showTab(4)">⑥ Ham.Cycle</button>
+<button onclick="showTab(5)">⑦ SubsetSum</button>
+<button onclick="showTab(6)">⑧ Knapsack</button>
+</div>
+
+<div class="tab-content show" id="tab0">
+<div class="pnl"><div class="ph"><span style="color:#8B5CF6">②</span> CLIQUE <span class="bg" id="kb"></span></div>
+<div class="pb"><svg id="ksvg" class="gsvg" viewBox="0 0 340 190"></svg><div id="kr"></div></div></div></div>
+
+<div class="tab-content" id="tab1">
+<div class="pnl"><div class="ph"><span style="color:#10B981">③</span> INDEPENDENT SET <span class="bg" id="ib"></span></div>
+<div class="pb"><svg id="isvg" class="gsvg" viewBox="0 0 340 190"></svg><div id="ir"></div></div></div></div>
+
+<div class="tab-content" id="tab2">
+<div class="pnl"><div class="ph"><span style="color:#F59E0B">④</span> VERTEX COVER <span class="bg" id="vcb"></span></div>
+<div class="pb"><svg id="vcsvg" class="gsvg" viewBox="0 0 340 190"></svg><div id="vcr"></div></div></div></div>
+
+<div class="tab-content" id="tab3">
+<div class="pnl"><div class="ph"><span style="color:#EC4899">⑤</span> 3-COLORING <span class="bg" id="colb"></span></div>
+<div class="pb"><svg id="colsvg" class="gsvg" viewBox="0 0 340 240"></svg><div id="colr"></div></div></div></div>
+
+<div class="tab-content" id="tab4">
+<div class="pnl"><div class="ph"><span style="color:#06B6D4">⑥</span> HAMILTONIAN CYCLE <span class="bg" id="hcb"></span></div>
+<div class="pb"><svg id="hcsvg" class="gsvg" viewBox="0 0 340 190"></svg><div id="hcr"></div></div></div></div>
+
+<div class="tab-content" id="tab5">
+<div class="pnl"><div class="ph"><span style="color:#F97316">⑦</span> SUBSET SUM <span class="bg" id="ssb"></span></div>
+<div class="pb"><div id="ssB"></div></div></div></div>
+
+<div class="tab-content" id="tab6">
+<div class="pnl"><div class="ph"><span style="color:#84CC16">⑧</span> KNAPSACK <span class="bg" id="ksb"></span></div>
+<div class="pb"><div id="ksB"></div></div></div></div>
+
+<div class="note" id="nt"></div>
+
+<script>
+const CC=["#3B82F6","#EF4444","#10B981","#F59E0B","#8B5CF6","#EC4899","#06B6D4","#F97316"];
+const CB=Math.log(10),NC=CB/Math.log(4/3);
+const EX=[
+{n:"Simple 3v2c",f:"(x1 ∨ ¬x2 ∨ x3) ∧ (¬x1 ∨ x2 ∨ ¬x3)"},
+{n:"3v3c",f:"(x1 ∨ x2 ∨ x3) ∧ (¬x1 ∨ ¬x2 ∨ x3) ∧ (x1 ∨ ¬x2 ∨ ¬x3)"},
+{n:"UNSAT",f:"(a ∨ b) ∧ (a ∨ ¬b) ∧ (¬a ∨ b) ∧ (¬a ∨ ¬b)"},
+{n:"4v5c",f:"(x1 ∨ ¬x2 ∨ x3) ∧ (¬x1 ∨ x2 ∨ x4) ∧ (x2 ∨ ¬x3 ∨ x4) ∧ (¬x1 ∨ ¬x3 ∨ ¬x4) ∧ (x1 ∨ x3 ∨ ¬x4)"},
+];
+let A={},F=EX[0].f,sT=null,sI=0,sRn=false,sD=false,sF=0,curTab=0;
+
+function showTab(i){curTab=i;document.querySelectorAll('.tab-content').forEach((t,j)=>t.className='tab-content'+(j===i?' show':''));
+document.querySelectorAll('.tabs button').forEach((b,j)=>b.className=j===i?'on':'');render();}
+
+function parse(f){const cl=[],vs=new Set();f.split(/[∧&]/).map(s=>s.trim()).forEach(p=>{const c=p.replace(/[()]/g,'').trim();if(!c)return;
+const ls=c.split(/[∨|]/).map(s=>s.trim()).filter(Boolean);const cl2=[];
+ls.forEach(l=>{const ng=l.startsWith('¬')||l.startsWith('!');const nm=l.replace(/[¬!]/g,'').trim();if(!nm)return;vs.add(nm);cl2.push({v:nm,ng});});
+if(cl2.length)cl.push(cl2);});return{clauses:cl,vars:[...vs].sort()};}
+function toK(p){const nd=[],ed=[];p.clauses.forEach((c,ci)=>c.forEach(l=>nd.push({clause:ci,lit:l,label:(l.ng?'¬':'')+l.v})));
+for(let i=0;i<nd.length;i++)for(let j=i+1;j<nd.length;j++){const a=nd[i],b=nd[j];if(a.clause===b.clause)continue;
+if(a.lit.v===b.lit.v&&a.lit.ng!==b.lit.ng)continue;ed.push([i,j]);}return{nodes:nd,edges:ed,k:p.clauses.length};}
+function comp(g){const n=g.nodes.length,es=new Set();g.edges.forEach(([i,j])=>{es.add(i+','+j);es.add(j+','+i);});
+const ed=[];for(let i=0;i<n;i++)for(let j=i+1;j<n;j++)if(!es.has(i+','+j))ed.push([i,j]);return{nodes:g.nodes,edges:ed,k:g.k};}
+function ev(p,a){return p.clauses.map(c=>c.some(l=>{const v=a[l.v];return v!==undefined&&(l.ng?!v:v);}));}
+function allAs(p,a){return p.vars.every(v=>a[v]!==undefined);}
+function actN(g,a){const s=new Set();g.nodes.forEach((nd,i)=>{const v=a[nd.lit.v];if(v!==undefined&&(nd.lit.ng?!v:v))s.add(i);});return s;}
+function chkK(g,act){if(act.size<g.k)return null;const sel=[];const ch=new Set();for(const i of act){if(!ch.has(g.nodes[i].clause)){ch.add(g.nodes[i].clause);sel.push(i);}}
+if(sel.length<g.k)return false;for(let i=0;i<sel.length;i++)for(let j=i+1;j<sel.length;j++)if(!g.edges.some(([a,b])=>(a===sel[i]&&b===sel[j])||(a===sel[j]&&b===sel[i])))return false;return true;}
+function chkI(g,act){if(act.size<g.k)return null;const sel=[];const ch=new Set();for(const i of act){if(!ch.has(g.nodes[i].clause)){ch.add(g.nodes[i].clause);sel.push(i);}}
+if(sel.length<g.k)return false;for(let i=0;i<sel.length;i++)for(let j=i+1;j<sel.length;j++)if(g.edges.some(([a,b])=>(a===sel[i]&&b===sel[j])||(a===sel[j]&&b===sel[i])))return false;return true;}
+function chkV(g,vc){if(vc.size===0&&g.edges.length>0)return null;for(const[i,j]of g.edges)if(!vc.has(i)&&!vc.has(j))return false;return true;}
+function lay(g,W,H){const nd=g.nodes;if(!nd.length)return[];const cn=Math.max(...nd.map(n=>n.clause))+1,pos=[],cx=W/2,cy=H/2,R=Math.min(W,H)*.33;
+const gr={};nd.forEach((n,i)=>{if(!gr[n.clause])gr[n.clause]=[];gr[n.clause].push(i);});
+Object.entries(gr).forEach(([ci,ids])=>{const ang=(parseInt(ci)/cn)*2*Math.PI-Math.PI/2;const gx=cx+R*Math.cos(ang),gy=cy+R*Math.sin(ang);
+const sp=Math.min(20,130/ids.length);ids.forEach((idx,li)=>{const off=(li-(ids.length-1)/2)*sp;const pr=ang+Math.PI/2;
+pos[idx]={x:gx+off*Math.cos(pr),y:gy+off*Math.sin(pr)};});});return pos;}
+function drG(sid,g,pos,hl,hc,ic){let h='';
+g.edges.forEach(([i,j])=>{const bo=hl.has(i)&&hl.has(j);h+=`<line x1="${pos[i]?.x}" y1="${pos[i]?.y}" x2="${pos[j]?.x}" y2="${pos[j]?.y}" stroke="${bo?hc:ic}" stroke-width="${bo?2:.3}" opacity="${bo?.8:.1}"/>`;});
+g.nodes.forEach((nd,i)=>{const act=hl.has(i);const col=CC[nd.clause%CC.length];
+h+=`<circle cx="${pos[i]?.x}" cy="${pos[i]?.y}" r="${act?10:6}" fill="${act?col:'#1E293B'}" stroke="${col}" stroke-width="${act?2:.6}" opacity="${act?1:.3}"/>`;
+h+=`<text x="${pos[i]?.x}" y="${pos[i]?.y}" text-anchor="middle" dominant-baseline="central" fill="${act?'#fff':'#94A3B8'}" font-size="6" font-weight="${act?800:400}" font-family="monospace">${nd.label}</text>`;});
+document.getElementById(sid).innerHTML=h;}
+
+// ═══ 3-COLORING ═══
+function build3Col(p){
+const{vars,clauses}=p;const nodes=[],edges=[];const nm={};
+const add=(id,lbl,tp)=>{if(!(id in nm)){nm[id]=nodes.length;nodes.push({id,label:lbl,type:tp});}return nm[id];};
+const T=add('T','T','pal'),F_=add('F','F','pal'),B=add('B','B','pal');
+edges.push([T,F_],[F_,B],[B,T]);
+vars.forEach(v=>{const p_=add('+'+v,v,'var'),n_=add('-'+v,'¬'+v,'var');edges.push([p_,n_],[p_,B],[n_,B]);});
+return{nodes,edges,nm,nVars:vars.length,nClauses:clauses.length};}
+
+function render3Col(p,asgn){
+const cg=build3Col(p);const W=340,H=240;
+const colors={};cg.nodes.forEach((nd,i)=>{
+if(nd.type==='pal'){colors[i]=nd.label==='T'?'#4ADE80':nd.label==='F'?'#F87171':'#60A5FA';}
+else if(nd.type==='var'){const v=nd.id.startsWith('+')?nd.id.slice(1):nd.id.slice(1);const neg=nd.id.startsWith('-');
+const val=asgn[v];if(val===undefined)colors[i]='#475569';
+else{const litTrue=neg?!val:val;colors[i]=litTrue?'#4ADE80':'#F87171';}}
+else colors[i]='#475569';});
+// Layout: palette triangle at top, vars in a row below
+const pos=[];const palY=30,varY=90;
+pos[cg.nm['T']]={x:170,y:palY};pos[cg.nm['F']]={x:120,y:palY+40};pos[cg.nm['B']]={x:220,y:palY+40};
+const varNodes=cg.nodes.filter(n=>n.type==='var');
+varNodes.forEach((n,i)=>{const idx=cg.nm[n.id];const x=40+(i/(varNodes.length-1||1))*260;pos[idx]={x,y:varY+80+(i%2)*35};});
+// Check valid coloring
+let valid=true;
+cg.edges.forEach(([i,j])=>{if(colors[i]&&colors[j]&&colors[i]===colors[j]&&colors[i]!=='#475569')valid=false;});
+let h='';
+cg.edges.forEach(([i,j])=>{const clash=colors[i]&&colors[j]&&colors[i]===colors[j]&&colors[i]!=='#475569';
+h+=`<line x1="${pos[i]?.x}" y1="${pos[i]?.y}" x2="${pos[j]?.x}" y2="${pos[j]?.y}" stroke="${clash?'#F87171':'#334155'}" stroke-width="${clash?2:.5}" opacity="${clash?1:.3}"/>`;});
+cg.nodes.forEach((nd,i)=>{
+h+=`<circle cx="${pos[i]?.x}" cy="${pos[i]?.y}" r="${nd.type==='pal'?12:9}" fill="${colors[i]}" stroke="#fff" stroke-width="${nd.type==='pal'?2:1}" opacity=".9"/>`;
+h+=`<text x="${pos[i]?.x}" y="${pos[i]?.y}" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="${nd.type==='pal'?10:8}" font-weight="800" font-family="monospace">${nd.label}</text>`;});
+document.getElementById('colsvg').innerHTML=h;
+const aa=allAs(p,asgn);
+document.getElementById('colr').innerHTML=aa?`<div class="gr ${valid?'y':'n'}">${valid?'VALID 3-COLORING ✓':'INVALID — adjacent same color ✗'}</div>`:`<div class="gr n">Assign all variables</div>`;
+document.getElementById('colb').textContent=`${cg.nodes.length}n ${cg.edges.length}e`;}
+
+// ═══ HAMILTONIAN CYCLE ═══
+function findHC(g){
+const n=g.nodes.length;if(n>14||n<3)return null;
+const adj=Array.from({length:n},()=>new Set());
+g.edges.forEach(([i,j])=>{adj[i].add(j);adj[j].add(i);});
+let best=null;
+function bt(path,visited){
+if(path.length===n){if(adj[path[path.length-1]].has(path[0])){best=[...path];return true;}return false;}
+const last=path[path.length-1];
+for(const next of adj[last]){if(!visited.has(next)){visited.add(next);path.push(next);if(bt(path,visited))return true;path.pop();visited.delete(next);}}
+return false;}
+const vis=new Set([0]);bt([0],vis);return best;}
+
+function renderHC(g,pos){
+const hc=findHC(g);
+let h='';
+// Draw all edges faintly
+g.edges.forEach(([i,j])=>{h+=`<line x1="${pos[i]?.x}" y1="${pos[i]?.y}" x2="${pos[j]?.x}" y2="${pos[j]?.y}" stroke="#1E293B" stroke-width=".3" opacity=".1"/>`;});
+// Draw HC path
+if(hc){for(let i=0;i<hc.length;i++){const a=hc[i],b=hc[(i+1)%hc.length];
+h+=`<line x1="${pos[a]?.x}" y1="${pos[a]?.y}" x2="${pos[b]?.x}" y2="${pos[b]?.y}" stroke="#06B6D4" stroke-width="2.5" opacity=".9"/>`;
+// Arrow
+const dx=pos[b].x-pos[a].x,dy=pos[b].y-pos[a].y,len=Math.sqrt(dx*dx+dy*dy);
+if(len>0){const mx=pos[a].x+dx*.6,my=pos[a].y+dy*.6;
+h+=`<circle cx="${mx}" cy="${my}" r="2" fill="#06B6D4"/>`;}}
+}
+g.nodes.forEach((nd,i)=>{const inHC=hc&&hc.includes(i);const col=CC[nd.clause%CC.length];
+h+=`<circle cx="${pos[i]?.x}" cy="${pos[i]?.y}" r="${inHC?10:6}" fill="${inHC?col:'#1E293B'}" stroke="${col}" stroke-width="${inHC?2:.6}" opacity="${inHC?1:.3}"/>`;
+h+=`<text x="${pos[i]?.x}" y="${pos[i]?.y}" text-anchor="middle" dominant-baseline="central" fill="${inHC?'#fff':'#94A3B8'}" font-size="6" font-weight="${inHC?800:400}" font-family="monospace">${nd.label}</text>`;});
+document.getElementById('hcsvg').innerHTML=h;
+document.getElementById('hcr').innerHTML=hc?`<div class="gr y">HC FOUND ✓ (${hc.length} nodes)</div>`
+:`<div class="gr n">${g.nodes.length>14?'Too large (>14 nodes)':'NO Hamiltonian Cycle'}</div>`;
+document.getElementById('hcb').textContent=`${g.nodes.length}n ${g.edges.length}e`;}
+
+// ═══ SUBSET SUM ═══
+function renderSS(p,a){const{vars,clauses}=p;const aa=allAs(p,a);
+let h='<table class="ss-table"><tr><th></th><th>Sel</th>';
+vars.forEach(v=>{h+=`<th>${v}</th>`;});clauses.forEach((_,i)=>{h+=`<th style="color:${CC[i%8]}">C${i+1}</th>`;});h+='</tr>';
+vars.forEach((v,vi)=>{[false,true].forEach(neg=>{const lb=(neg?'¬':'')+v;const val=a[v];const sel=val!==undefined&&(neg?!val:val);
+const d=new Array(vars.length+clauses.length).fill(0);d[vi]=1;
+clauses.forEach((c,ci)=>{if(c.some(l=>l.v===v&&l.ng===neg))d[vars.length+ci]=1;});
+h+=`<tr class="${sel?'ss-sel':'ss-unsel'}"><td style="font-weight:700">${lb}</td><td>${sel?'✓':''}</td>`;
+d.forEach(x=>{h+=`<td class="${x?'ss-v1':'ss-v0'}">${x}</td>`;});h+='</tr>';});});
+if(aa){const sums=new Array(vars.length+clauses.length).fill(0);
+vars.forEach((v,vi)=>{[false,true].forEach(neg=>{const val=a[v];const sel=val!==undefined&&(neg?!val:val);if(!sel)return;
+sums[vi]+=1;clauses.forEach((c,ci)=>{if(c.some(l=>l.v===v&&l.ng===neg))sums[vars.length+ci]+=1;});});});
+h+='<tr><td style="font-weight:800">Σ</td><td></td>';sums.forEach(s=>{h+=`<td class="${s>=1?'ss-hit':'ss-miss'}">${s}</td>`;});h+='</tr>';}
+h+='</table>';document.getElementById('ssB').innerHTML=h;
+document.getElementById('ssb').textContent=`${vars.length*2} numbers`;}
+
+// ═══ KNAPSACK ═══
+function renderKS(p,a){const{vars,clauses}=p;const aa=allAs(p,a);let tW=0,tV=0;
+let h='<table class="ss-table"><tr><th>Item</th><th>Sel</th><th>W</th><th>Val</th><th>Covers</th></tr>';
+vars.forEach(v=>{[false,true].forEach(neg=>{const lb=(neg?'¬':'')+v;const val=a[v];const sel=val!==undefined&&(neg?!val:val);
+const cov=[];clauses.forEach((c,ci)=>{if(c.some(l=>l.v===v&&l.ng===neg))cov.push(ci);});
+if(sel){tW+=1;tV+=cov.length;}
+h+=`<tr class="${sel?'ss-sel':'ss-unsel'}"><td style="font-weight:700">${lb}</td><td>${sel?'✓':''}</td><td>1</td><td>${cov.length}</td><td style="font-size:7px">${cov.map(i=>'C'+(i+1)).join(',')||'—'}</td></tr>`;});});
+if(aa){const cr=ev(p,a);const sat=cr.filter(Boolean).length;
+h+=`<tr><td style="font-weight:800">TOT</td><td></td><td class="${tW<=vars.length?'ss-hit':'ss-miss'}">${tW}/${vars.length}</td><td>${tV}</td><td class="${sat===clauses.length?'ss-hit':'ss-miss'}">${sat}/${clauses.length}</td></tr>`;}
+h+='</table>';document.getElementById('ksB').innerHTML=h;
+document.getElementById('ksb').textContent=`${vars.length*2} items`;}
+
+// ═══ LAMBDA ═══
+function compL(p){const n=p.vars.length,t=1<<n;if(n>16)return{l:NaN,sc:0,t,ph:'big'};let sc=0;
+for(let i=0;i<t;i++){const a={};p.vars.forEach((v,j)=>{a[v]=!!(i&(1<<j));});if(ev(p,a).every(Boolean))sc++;}
+const l=sc>0?Math.log(t/sc):Infinity;return{l,sc,t,c:sc>0?t/sc:Infinity,ph:sc===t?'dead':sc===0?'unsat':'live',P:1/n};}
+function renderLam(p){const i=compL(p);
+document.getElementById('lv1').textContent=isFinite(i.l)?i.l.toFixed(1):'∞';
+document.getElementById('lv1').style.color=i.ph==='dead'?'#64748B':i.ph==='unsat'?'#F87171':'#4ADE80';
+document.getElementById('lv2').textContent=isFinite(i.c)?(i.c>=1e3?i.c.toExponential(0):i.c.toFixed(1)+'×'):'∞';
+const pn={dead:'Crystal',live:'Living',unsat:'UNSAT'};const pc={dead:'#64748B',live:'#4ADE80',unsat:'#F87171'};
+document.getElementById('lv3').textContent=pn[i.ph]||'—';document.getElementById('lv3').style.color=pc[i.ph]||'#94A3B8';
+const rl=document.getElementById('rl');const LP=i.l*i.P;
+if(isFinite(LP)){rl.textContent=`Λ·P=${LP.toFixed(3)} ${LP<=CB?'≤':'>'} C=${CB.toFixed(3)}`;rl.className='rl '+(LP<=CB?'rl-ok':'rl-v');}
+else{rl.textContent='Λ=∞ UNSAT';rl.className='rl rl-v';}
+const nc=document.getElementById('ncw');const n=p.vars.length;
+if(n>=8){nc.className='ncw show';nc.textContent=`⚠ n=${n}≥n_crit≈8, space=${(1<<n).toLocaleString()}`;}else nc.className='ncw';}
+
+// ═══ SOLVER ═══
+function genR(nv){const vs=[];for(let i=1;i<=nv;i++)vs.push('x'+i);const nc=Math.max(2,Math.floor(nv*1.5));
+const cls=[];for(let c=0;c<nc;c++){const ls=[];const u=new Set();for(let l=0;l<Math.min(3,nv);l++){let vi;
+do{vi=Math.floor(Math.random()*nv);}while(u.has(vi));u.add(vi);ls.push((Math.random()<.5?'¬':'')+vs[vi]);}
+cls.push('('+ls.join(' ∨ ')+')');}F=cls.join(' ∧ ');document.getElementById('fin').value=F;sReset();}
+function getA(vs,i){const a={};vs.forEach((v,j)=>{a[v]=!!(i&(1<<j));});return a;}
+function sStep(){const p=parse(F),t=1<<p.vars.length;if(sI>=t){sD=true;uP(p,t);return;}
+A=getA(p.vars,sI);const cr=ev(p,A);const sat=cr.every(Boolean);sI++;if(!sat)sF++;render();uP(p,t);
+if(sat){sD=true;sStop();document.getElementById('prr').className='pr sat';document.getElementById('prr').textContent='FOUND ✓ '+sI+'/'+t;document.getElementById('pb').className='pbar found';return true;}
+if(sI>=t){sD=true;sStop();document.getElementById('prr').className='pr unsat';document.getElementById('prr').textContent='ALL '+t+' EXHAUSTED ✗';document.getElementById('pb').className='pbar exh';return false;}return null;}
+function sAuto(){if(sRn)return;if(sD)sReset();sRn=true;document.getElementById('ab').textContent='▶...';
+document.getElementById('prog').className='prog show';
+const tk=()=>{if(!sRn)return;const r=sStep();if(r!==null&&r!==undefined){sRn=false;document.getElementById('ab').textContent='▶Auto';return;}
+sT=setTimeout(tk,101-parseInt(document.getElementById('sp').value));};tk();}
+function sStop(){sRn=false;if(sT){clearTimeout(sT);sT=null;}document.getElementById('ab').textContent='▶Auto';}
+function sReset(){sStop();sI=0;sF=0;sD=false;A={};document.getElementById('prog').className='prog';render();}
+function uP(p,t){document.getElementById('prog').className='prog show';document.getElementById('ps').textContent=sI;
+document.getElementById('pt').textContent='/'+t;const pct=(sI/t)*100;
+document.getElementById('pb').style.width=Math.min(100,pct)+'%';if(!sD)document.getElementById('pb').className='pbar srch';
+document.getElementById('pc').textContent=p.vars.map(v=>v+'='+(A[v]?'T':'F')).join(' ');
+document.getElementById('pf').textContent='Fail:'+sF;
+if(!sD){document.getElementById('prr').className='pr srch';document.getElementById('prr').textContent=Math.round(pct)+'%';}}
+
+// ═══ MAIN RENDER ═══
+function render(){
+const p=parse(F),g=toK(p),gc=comp(g),cr=ev(p,A),aa=allAs(p,A);
+const act=actN(g,A),allI=new Set(g.nodes.map((_,i)=>i)),vcN=new Set([...allI].filter(i=>!act.has(i)));
+const pos=lay(g,340,190);
+renderLam(p);
+document.getElementById('sb').textContent=`${p.vars.length}v ${p.clauses.length}c`;
+document.getElementById('kb').textContent=`${g.nodes.length}n k=${g.k}`;
+document.getElementById('ib').textContent=`comp:${gc.edges.length}e`;
+document.getElementById('vcb').textContent=`vc=${g.nodes.length-g.k}`;
+const vb=document.getElementById('vb');vb.innerHTML='';
+p.vars.forEach(v=>{const b=document.createElement('button');b.className='vb '+(A[v]===undefined?'u':A[v]?'t':'f');
+b.textContent=v+'='+(A[v]===undefined?'?':A[v]?'T':'F');
+b.onclick=()=>{if(!sRn){if(A[v]===undefined)A[v]=true;else if(A[v])A[v]=false;else delete A[v];render();}};vb.appendChild(b);});
+const cll=document.getElementById('cll');cll.innerHTML='';
+p.clauses.forEach((c,ci)=>{const sat=aa?cr[ci]:undefined;const r=document.createElement('div');
+r.className='cr '+(sat===undefined?'u':sat?'s':'n');r.style.borderLeft=`2px solid ${CC[ci%8]}33`;
+let h=`<span style="color:${CC[ci%8]};font-weight:800;font-size:8px;min-width:16px">C${ci+1}</span><span class="ct">(`;
+c.forEach((l,li)=>{if(li)h+='<span style="color:#475569">∨</span>';const v=A[l.v];let cls='lu';
+if(v!==undefined)cls=(l.ng?!v:v)?'lt':'lf';h+=`<span class="${cls}">${l.ng?'¬':''}${l.v}</span>`;});
+h+=`)</span><span class="ci">${sat===undefined?'·':sat?'✓':'✗'}</span>`;r.innerHTML=h;cll.appendChild(r);});
+const sr=document.getElementById('sr');
+if(aa){const ok=cr.every(Boolean);sr.innerHTML=`<div class="rb ${ok?'s':'n'}">${ok?'SAT ✓':'UNSAT ✗'}</div>`;}else sr.innerHTML='';
+
+// Render active tab
+if(curTab===0){drG('ksvg',g,pos,act,'#4ADE80','#1E293B');
+document.getElementById('kr').innerHTML=chkK(g,act)===true?`<div class="gr y">CLIQUE ✓</div>`:`<div class="gr n">—</div>`;}
+if(curTab===1){drG('isvg',gc,pos,act,'#10B981','#334155');
+document.getElementById('ir').innerHTML=chkI(gc,act)===true?`<div class="gr y">IND.SET ✓</div>`:`<div class="gr n">—</div>`;}
+if(curTab===2){drG('vcsvg',gc,pos,vcN,'#F59E0B','#334155');
+document.getElementById('vcr').innerHTML=chkV(gc,vcN)===true?`<div class="gr y">V.COVER ✓</div>`:`<div class="gr n">—</div>`;}
+if(curTab===3)render3Col(p,A);
+if(curTab===4)renderHC(g,pos);
+if(curTab===5)renderSS(p,A);
+if(curTab===6)renderKS(p,A);
+
+document.getElementById('nt').innerHTML=`<b>8 geometries.</b> ①SAT=logic ②Clique=density ③IS=sparsity ④VC=covering ⑤3-Color=chromatic ⑥HC=traversal ⑦SubsetSum=numeric ⑧Knapsack=optimization. <b>Same problem everywhere.</b> Λ·P≤C=${CB.toFixed(3)}, n_crit≈${Math.ceil(NC)}.`;}
+
+// Init
+const exs=document.getElementById('exs');
+EX.forEach((e,i)=>{const b=document.createElement('button');b.textContent=e.n;b.className=i===0?'on':'';
+b.onclick=()=>{F=e.f;document.getElementById('fin').value=F;sReset();
+exs.querySelectorAll('button').forEach((x,j)=>x.className=j===i?'on':'');};exs.appendChild(b);});
+document.getElementById('fin').value=F;
+document.getElementById('fin').addEventListener('input',function(){F=this.value;sReset();
+exs.querySelectorAll('button').forEach(b=>b.className=b.className.replace(' on',''));});
+render();
+</script>
+</body>
+</html>
