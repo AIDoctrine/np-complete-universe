@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NP Optimization Lab v9 Full — Eight Reductions + Exact Search</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020617;color:#E2E8F0;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:12px;max-width:820px;margin:0 auto}
+.hdr{text-align:center;margin-bottom:10px}
+.hdr h1{font-size:19px;font-weight:850;background:linear-gradient(135deg,#3B82F6,#8B5CF6,#EC4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hdr p{color:#64748B;font-size:11px;margin-top:3px}
+.row{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;justify-content:center}
+.row button{padding:4px 8px;border-radius:4px;border:1px solid #334155;background:#0F172A;color:#94A3B8;cursor:pointer;font-size:9px;font-weight:700}
+.row button:hover{border-color:#64748B}.row button.on{background:#1E40AF;color:#fff;border-color:#3B82F6}
+.fin{width:100%;padding:8px 10px;border-radius:5px;border:1px solid #334155;background:#0F172A;color:#E2E8F0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;margin-bottom:3px;outline:none}
+.fin:focus{border-color:#3B82F6}.fin.err{border-color:#EF4444}
+.input-help{font-size:8px;color:#64748B;margin:0 2px 6px}.input-error{display:none;color:#FCA5A5;background:#450A0A;border:1px solid #7F1D1D;border-radius:4px;padding:5px 7px;font-size:9px;margin-bottom:6px}.input-error.show{display:block}
+.mode-row,.algo-row{display:flex;justify-content:center;gap:0;margin-bottom:7px}
+.mode-row button,.algo-row button{padding:5px 13px;font-size:9px;font-weight:800;cursor:pointer;border:1px solid #334155}
+.mode-row button:first-child,.algo-row button:first-child{border-radius:5px 0 0 5px}.mode-row button:last-child,.algo-row button:last-child{border-radius:0 5px 5px 0}
+.m-on-b{background:#1E40AF;color:#fff;border-color:#3B82F6!important}.m-on-o{background:#7C2D12;color:#FDBA74;border-color:#F97316!important}.m-off{background:#0F172A;color:#64748B}
+.a-bf{background:#1E293B;color:#94A3B8}.a-bf.on{background:#4C1D95;color:#DDD6FE;border-color:#7C3AED!important}.a-bb{background:#1E293B;color:#94A3B8}.a-bb.on{background:#065F46;color:#A7F3D0;border-color:#10B981!important}
+.pnl{background:#0F172A;border-radius:6px;border:1px solid #1E293B;overflow:hidden;margin-bottom:6px}
+.ph{padding:6px 8px;background:#1E293B;font-size:10px;font-weight:850;display:flex;align-items:center;gap:5px}.ph .bg{font-size:8px;color:#64748B;font-weight:500;margin-left:auto}
+.pb{padding:8px}.sl{font-size:9px;color:#94A3B8;margin-bottom:4px;font-weight:700;letter-spacing:.55px}
+.vbs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}.vb{padding:4px 9px;border-radius:4px;border:none;cursor:pointer;font-weight:750;font-size:11px;font-family:ui-monospace,monospace}.vb.u{background:#1E293B;color:#64748B}.vb.t{background:#065F46;color:#fff}.vb.f{background:#7F1D1D;color:#fff}
+.cr{display:flex;align-items:center;gap:4px;padding:4px 6px;border-radius:4px;margin-bottom:3px;font-size:10px}.cr.o{background:#422006}.cr.s{background:#052E16}.cr.n{background:#450A0A}.ct{font-family:ui-monospace,monospace;font-size:10px;flex:1}.ci{font-size:12px;margin-left:auto}.lu{color:#94A3B8}.lt{color:#4ADE80;font-weight:850}.lf{color:#F87171}.lopen{color:#FBBF24}
+.odash{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:6px;padding:4px;background:#1E293B;border-radius:4px}.ocard{text-align:center;padding:3px}.ocard .ov{font-size:15px;font-weight:850}.ocard .ol{font-size:7px;color:#64748B;font-weight:700}.obj-sat .ov{color:#4ADE80}.obj-partial .ov{color:#F59E0B}.obj-fail .ov{color:#F87171}.obj-na .ov{color:#64748B}
+.solver{display:flex;gap:4px;align-items:center;margin-bottom:6px;flex-wrap:wrap;justify-content:center}.solver button{padding:4px 9px;border-radius:4px;border:1px solid #334155;background:#0F172A;cursor:pointer;font-weight:750;font-size:9px}
+.prog{background:#0F172A;border-radius:4px;border:1px solid #1E293B;padding:6px 8px;margin-bottom:6px;display:none}.prog.show{display:block}.pbar-w{background:#1E293B;border-radius:3px;height:5px;margin:3px 0;overflow:hidden}.pbar{height:100%;border-radius:3px;transition:width .05s}.pbar.srch{background:#8B5CF6}.pbar.found{background:#4ADE80}.pbar.exh{background:#F87171}.pi{display:flex;justify-content:space-between;gap:8px;font-size:8px;color:#94A3B8;font-family:ui-monospace,monospace}.pr{text-align:center;font-weight:850;font-size:10px;margin-top:3px}.pr.sat{color:#4ADE80}.pr.unsat{color:#F87171}.pr.srch{color:#A78BFA}
+.tree-box{background:#0F172A;border-radius:6px;border:1px solid #1E293B;padding:8px;margin-bottom:6px}.tree-box svg{width:100%;display:block}.tree-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:5px}.ts{background:#1E293B;border-radius:4px;padding:5px;text-align:center}.ts .tv{font-size:15px;font-weight:850}.ts .tl{font-size:7px;color:#64748B;font-weight:700}.ts-explored .tv{color:#8B5CF6}.ts-leaves .tv{color:#38BDF8}.ts-pruned .tv{color:#F87171}.ts-inc .tv{color:#F59E0B}
+.gsvg{background:#0F172A;border-radius:4px;display:block;width:100%}.tabs{display:flex;gap:3px;margin-bottom:5px;flex-wrap:wrap;justify-content:center}.tabs button{padding:4px 7px;border-radius:4px;border:1px solid #334155;background:#0F172A;color:#64748B;cursor:pointer;font-size:8px;font-weight:750}.tabs button.on{border-color:#8B5CF6;color:#E2E8F0;background:#1E1B4B}.tc{display:none}.tc.show{display:block}
+.note{padding:7px 8px;background:#0F172A;border-radius:4px;border:1px solid #1E293B;font-size:9px;color:#CBD5E1;line-height:1.45;margin-bottom:6px}.proof{border-color:#334155;background:#111827}.proof b{color:#C4B5FD}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}.cmp-card{background:#0F172A;border-radius:6px;border:1px solid #1E293B;padding:9px;text-align:center}.cmp-card h3{font-size:10px;margin-bottom:4px}.cmp-val{font-size:24px;font-weight:850}.cmp-label{font-size:8px;color:#94A3B8}.cmp-sub{font-size:7px;color:#64748B;margin-top:3px}
+
+/* Restored full educational layer */
+.lp{background:#0F172A;border-radius:6px;border:1px solid #1E293B;padding:8px;margin-bottom:7px}
+.lg{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:6px}.lc{background:#1E293B;border-radius:4px;padding:6px;text-align:center}.lc .lv{font-size:18px;font-weight:850}.lc .ll{font-size:7px;color:#64748B;font-weight:700;margin-top:1px}.rl{text-align:center;font-family:ui-monospace,monospace;font-size:9px;padding:5px;border-radius:4px}.rl-ok{background:#052E16;color:#4ADE80}.rl-w{background:#451A03;color:#FBBF24}.rl-v{background:#450A0A;color:#F87171}.ncw{text-align:center;font-size:9px;padding:5px 7px;border-radius:4px;margin-top:5px;background:#451A03;color:#FBBF24;display:none}.ncw.show{display:block}
+.ss-table{width:100%;border-collapse:collapse;font-size:8px;font-family:ui-monospace,monospace}.ss-table th{background:#1E293B;padding:4px;font-weight:750;text-align:center;border:1px solid #0F172A}.ss-table td{padding:4px;text-align:center;border:1px solid #0F172A;transition:all .12s}.ss-sel{background:#065F46;color:#D1FAE5;font-weight:800}.ss-unsel{background:#1E293B;color:#64748B}.ss-hit{background:#052E16;color:#4ADE80;font-weight:850}.ss-miss{background:#450A0A;color:#F87171;font-weight:850}.ss-vector{letter-spacing:1px;white-space:nowrap}.table-scroll{overflow-x:auto;border-radius:4px}.reduction-caption{font-size:8px;color:#94A3B8;line-height:1.4;margin-top:5px}.clause-tabs{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;margin-bottom:5px}.clause-tabs button{padding:3px 6px;border-radius:3px;border:1px solid #334155;background:#0F172A;color:#64748B;font-size:7px;font-weight:800;cursor:pointer}.clause-tabs button.on{background:#1E1B4B;color:#DDD6FE;border-color:#8B5CF6}.mini-legend{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;font-size:7px;color:#94A3B8;margin:3px 0}.mini-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:2px}.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:7px}.sc{background:#0F172A;border-radius:4px;padding:5px;border:1px solid #1E293B;text-align:center}.sv{font-size:14px;font-weight:850}.sn{font-size:7px;color:#64748B;font-weight:700}.warn-inline{color:#FBBF24}.exact-inline{color:#4ADE80}.unsupported{padding:8px;text-align:center;color:#FBBF24;background:#451A03;border-radius:4px;font-size:9px}.ham-note{font-size:8px;color:#94A3B8;line-height:1.35;margin-top:5px}.svg-label{font-family:ui-monospace,monospace}
+
+@media(max-width:520px){body{padding:8px}.hdr h1{font-size:17px}.mode-row button,.algo-row button{padding:5px 9px;font-size:8px}.odash{gap:2px}.ocard .ov{font-size:13px}.tree-stats{gap:2px}.ts .tv{font-size:13px}}
+</style>
+</head>
+<body>
+<div class="hdr"><h1>NP Optimization Lab v9 Full</h1><p>Eight NP views + Brute Force / Branch &amp; Bound — reductions, search, certificates</p></div>
+<div class="row" id="exs"></div>
+<div class="row"><button onclick="genR(3)">Rand 3v</button><button onclick="genR(4)">Rand 4v</button><button onclick="genR(5)">Rand 5v</button><button onclick="genR(6)">Rand 6v</button><button onclick="genR(8)">Rand 8v</button></div>
+<input class="fin" id="fin" aria-label="CNF formula"/>
+<div class="input-help">CNF syntax: clauses joined by ∧ or &, literals joined by ∨ or |, negation ¬ or !. Maximum 20 variables.</div>
+<div class="input-error" id="inputError"></div>
+
+<div class="mode-row">
+<button id="modeSAT" class="m-off" onclick="setMode('sat')">SAT Decision</button>
+<button id="modeMAX" class="m-on-o" onclick="setMode('maxsat')">MaxSAT Optimization</button>
+</div>
+<div class="algo-row">
+<button class="a-bf on" id="algBF" onclick="setAlgo('bf')">Brute Force</button>
+<button class="a-bb" id="algBB" onclick="setAlgo('bb')">Branch & Bound</button>
+</div>
+
+<div class="lp" id="lp"><div class="lg">
+<div class="lc"><div class="lv" id="lv1">—</div><div class="ll">Λ STRUCTURAL LOAD</div></div>
+<div class="lc"><div class="lv" id="lv2">—</div><div class="ll">SOLUTION COMPRESSION</div></div>
+<div class="lc"><div class="lv" id="lv3">—</div><div class="ll">SOLUTION-SPACE PHASE</div></div>
+</div><div class="rl" id="rl">Λ·P ≤ C = ln(10)</div><div class="ncw" id="ncw"></div></div>
+
+<div class="solver">
+<button style="color:#60A5FA" onclick="sStep()">⏯ Step</button>
+<button style="color:#34D399" id="ab" onclick="sAuto()">▶ Auto</button>
+<button style="color:#F87171" onclick="sStop()">⏹ Stop</button>
+<button style="color:#94A3B8" onclick="sReset()">↺ Reset</button>
+<div style="font-size:8px;color:#64748B"><input type="range" id="sp" min="1" max="100" value="75" style="width:48px;accent-color:#8B5CF6"/></div>
+</div>
+<div class="prog" id="prog"><div class="pi"><span id="ps">0</span><span id="pt"></span></div>
+<div class="pbar-w"><div class="pbar srch" id="pb" style="width:0%"></div></div>
+<div class="pi"><span id="pc">—</span><span id="pf"></span></div>
+<div class="pr srch" id="prr"></div></div>
+
+<div class="tree-box" id="treeBox" style="display:none">
+<div style="font-size:9px;font-weight:750;color:#94A3B8;margin-bottom:4px">SEARCH TREE — <span style="color:#8B5CF6">● visited</span> <span style="color:#F87171">× pruned</span> <span style="color:#F59E0B">● incumbent</span> <span style="color:#4ADE80">● optimum</span></div>
+<svg id="treeSvg" viewBox="0 0 340 175"></svg>
+<div class="tree-stats">
+<div class="ts ts-explored"><div class="tv" id="tsVisited">0</div><div class="tl">VISITED NODES</div></div>
+<div class="ts ts-leaves"><div class="tv" id="tsLeaves">0</div><div class="tl">EVALUATED ASSIGN.</div></div>
+<div class="ts ts-pruned"><div class="tv" id="tsPruned">0</div><div class="tl">PRUNED ASSIGN.</div></div>
+<div class="ts ts-inc"><div class="tv" id="tsInc">—</div><div class="tl">INCUMBENT</div></div>
+</div></div>
+
+<div class="cmp" id="cmpBox" style="display:none">
+<div class="cmp-card" style="border-color:#7C3AED66"><h3 style="color:#A78BFA">BRUTE FORCE</h3><div class="cmp-val" style="color:#A78BFA" id="cmpBF">—</div><div class="cmp-label">complete assignments evaluated</div><div class="cmp-sub" id="cmpBFSub"></div></div>
+<div class="cmp-card" style="border-color:#10B98166"><h3 style="color:#34D399">BRANCH & BOUND</h3><div class="cmp-val" style="color:#34D399" id="cmpBB">—</div><div class="cmp-label">complete assignments evaluated</div><div class="cmp-sub" id="cmpBBSub"></div></div>
+</div>
+
+<div class="pnl"><div class="ph"><span style="color:#3B82F6">①</span> MaxSAT / SAT <span class="bg" id="sb"></span></div>
+<div class="pb"><div class="sl">VARIABLES</div><div class="vbs" id="vb"></div><div class="sl">CLAUSES — green: SAT, amber: OPEN, red: DEAD</div><div id="cll"></div><div id="satDash"></div></div></div>
+
+<div class="note proof"><b>Exact reduction.</b> Create one vertex for every literal occurrence. Join vertices from different clauses unless they are contradictory. One true literal chosen from each currently satisfied clause forms a clique; the same vertices form an independent set in the complement; all remaining vertices form a vertex cover. Thus OPT<sub>MaxSAT</sub> = ω(G) = α(Ḡ), and τ(Ḡ) = |V| − OPT<sub>MaxSAT</sub>.</div>
+
+<div class="tabs">
+<button class="on" onclick="showTab(0)">② Clique</button><button onclick="showTab(1)">③ Independent Set</button><button onclick="showTab(2)">④ Vertex Cover</button><button onclick="showTab(3)">⑤ 3-Coloring</button><button onclick="showTab(4)">⑥ Hamiltonian Cycle</button><button onclick="showTab(5)">⑦ Subset Sum</button><button onclick="showTab(6)">⑧ Knapsack</button>
+</div>
+<div class="tc show" id="t0"><div class="pnl"><div class="ph"><span style="color:#8B5CF6">②</span> MAX CLIQUE <span class="bg" id="kb"></span></div><div class="pb"><svg id="ksvg" class="gsvg" viewBox="0 0 340 180"></svg><div id="kDash"></div></div></div></div>
+<div class="tc" id="t1"><div class="pnl"><div class="ph"><span style="color:#10B981">③</span> MAX INDEPENDENT SET <span class="bg" id="ib"></span></div><div class="pb"><svg id="isvg" class="gsvg" viewBox="0 0 340 180"></svg><div id="iDash"></div></div></div></div>
+<div class="tc" id="t2"><div class="pnl"><div class="ph"><span style="color:#F59E0B">④</span> MIN VERTEX COVER <span class="bg" id="vcb"></span></div><div class="pb"><svg id="vcsvg" class="gsvg" viewBox="0 0 340 180"></svg><div id="vcDash"></div></div></div></div>
+<div class="tc" id="t3"><div class="pnl"><div class="ph"><span style="color:#EC4899">⑤</span> VERTEX 3-COLORING <span class="bg" id="colorb"></span></div><div class="pb"><div class="clause-tabs" id="colorClauseTabs"></div><svg id="colorSvg" class="gsvg" viewBox="0 0 340 220"></svg><div class="mini-legend"><span><i class="mini-dot" style="background:#4ADE80"></i>T color</span><span><i class="mini-dot" style="background:#F87171"></i>F color</span><span><i class="mini-dot" style="background:#38BDF8"></i>B color</span></div><div id="colorDash"></div><div class="reduction-caption" id="colorNote"></div></div></div></div>
+<div class="tc" id="t4"><div class="pnl"><div class="ph"><span style="color:#F97316">⑥</span> DIRECTED HAMILTONIAN CYCLE <span class="bg" id="hamb"></span></div><div class="pb"><svg id="hamSvg" class="gsvg" viewBox="0 0 340 230"></svg><div id="hamDash"></div><div class="ham-note" id="hamNote"></div></div></div></div>
+<div class="tc" id="t5"><div class="pnl"><div class="ph"><span style="color:#EC4899">⑦</span> EXACT SUBSET SUM <span class="bg" id="ssb"></span></div><div class="pb"><div class="table-scroll"><div id="ssBody"></div></div><div id="ssDash"></div><div class="reduction-caption">Variable items choose T/F once. Clause slack items complete every satisfied clause digit to the exact target; an unsatisfied clause cannot reach the target.</div></div></div></div>
+<div class="tc" id="t6"><div class="pnl"><div class="ph"><span style="color:#06B6D4">⑧</span> 0/1 KNAPSACK <span class="bg" id="ksb"></span></div><div class="pb"><div class="table-scroll"><div id="ksBody"></div></div><div id="knapDash"></div><div class="reduction-caption">Subset Sum → Knapsack: every item has weight = value, capacity = target T, required value = T. Feasibility forces exact equality.</div></div></div></div>
+<div class="note proof"><b>Full chain.</b> ①–④ share exact MaxSAT objective identities. ⑤ uses the standard T/F/B clause gadget for 3-CNF. ⑥ displays the directed variable-chain Hamiltonian certificate induced by the current assignment. ⑦–⑧ use an exact no-carry digit encoding with clause slack items.</div>
+<div class="note" id="nt"></div>
+<div class="sg" id="sg"></div>
+
+<script>
+'use strict';
+const MAX_VARS=20;
+const CB=Math.log(10),NC=CB/Math.log(4/3);
+let lambdaCache={key:null,value:null},colorClause=0;
+const CC=["#3B82F6","#EF4444","#10B981","#F59E0B","#8B5CF6","#EC4899","#06B6D4","#F97316"];
+const COLLATOR=new Intl.Collator(undefined,{numeric:true,sensitivity:'base'});
+const EX=[
+{n:"3v2c",f:"(x1 ∨ ¬x2 ∨ x3) ∧ (¬x1 ∨ x2 ∨ ¬x3)"},
+{n:"3v3c",f:"(x1 ∨ x2 ∨ x3) ∧ (¬x1 ∨ ¬x2 ∨ x3) ∧ (x1 ∨ ¬x2 ∨ ¬x3)"},
+{n:"UNSAT",f:"(a ∨ b) ∧ (a ∨ ¬b) ∧ (¬a ∨ b) ∧ (¬a ∨ ¬b)"},
+{n:"4v5c",f:"(x1 ∨ ¬x2 ∨ x3) ∧ (¬x1 ∨ x2 ∨ x4) ∧ (x2 ∨ ¬x3 ∨ x4) ∧ (¬x1 ∨ ¬x3 ∨ ¬x4) ∧ (x1 ∨ x3 ∨ ¬x4)"},
+{n:"5v7c",f:"(x1 ∨ ¬x2 ∨ x3) ∧ (¬x1 ∨ x2 ∨ x4) ∧ (x2 ∨ ¬x3 ∨ x5) ∧ (¬x1 ∨ ¬x4 ∨ x5) ∧ (x1 ∨ x3 ∨ ¬x5) ∧ (¬x2 ∨ x4 ∨ ¬x5) ∧ (x1 ∨ ¬x3 ∨ ¬x4)"}
+];
+let A={},F=EX[0].f,sT=null,sRn=false,sD=false,curTab=0;
+let MODE='maxsat',ALGO='bf';
+let inc=-Infinity,incA=null,incTreeId=null;
+let bfIdx=0,bfEvaluated=0;
+let bbStack=[],bbVisitedNodes=0,bbEvaluatedAssignments=0,bbPrunedAssignments=0,bbPruneCuts=0,bbTree=[],bbDone=false;
+
+function setMode(mode){MODE=mode;document.getElementById('modeSAT').className=mode==='sat'?'m-on-b':'m-off';document.getElementById('modeMAX').className=mode==='maxsat'?'m-on-o':'m-off';sReset();}
+function setAlgo(algo){ALGO=algo;document.getElementById('algBF').className='a-bf'+(algo==='bf'?' on':'');document.getElementById('algBB').className='a-bb'+(algo==='bb'?' on':'');sReset();}
+function showTab(i){curTab=i;document.querySelectorAll('.tc').forEach((t,j)=>t.className='tc'+(j===i?' show':''));document.querySelectorAll('.tabs button').forEach((b,j)=>b.className=j===i?'on':'');render();}
+
+function parseCNF(input){
+  const raw=input.trim();
+  if(!raw)throw new Error('Enter a non-empty CNF formula.');
+  if(/[→↔⇒⇔]/.test(raw))throw new Error('Only CNF is supported; implications and equivalences are not allowed.');
+  const normalized=raw.replace(/&&/g,'∧').replace(/\|\|/g,'∨');
+  const parts=normalized.split(/[∧&,]/);
+  if(parts.some(x=>x.trim()===''))throw new Error('Empty clause separator detected. Remove repeated or trailing ∧, &, or comma.');
+  const clauses=[],vars=new Set();
+  parts.forEach((part,ci)=>{
+    let c=part.trim();
+    const wasEmptyClause=/^\(\s*\)$/.test(c);
+    if(c.startsWith('(')&&c.endsWith(')'))c=c.slice(1,-1).trim();
+    if(/[()]/.test(c))throw new Error(`Clause ${ci+1}: nested or unmatched parentheses are not supported.`);
+    if(c===''&&wasEmptyClause){clauses.push([]);return;}
+    if(c==='')throw new Error(`Clause ${ci+1} is empty.`);
+    const tokens=c.split(/[∨|]/);
+    if(tokens.some(x=>x.trim()===''))throw new Error(`Clause ${ci+1}: missing literal next to ∨ or |.`);
+    const lits=tokens.map((token,li)=>{
+      const m=token.trim().match(/^(¬|!)?\s*([A-Za-z_][A-Za-z0-9_]*)$/);
+      if(!m)throw new Error(`Clause ${ci+1}, literal ${li+1}: “${token.trim()}” is not a valid literal.`);
+      const name=m[2],ng=Boolean(m[1]);vars.add(name);return{v:name,ng};
+    });
+    clauses.push(lits);
+  });
+  const sorted=[...vars].sort(COLLATOR.compare);
+  if(sorted.length>MAX_VARS)throw new Error(`This educational build supports at most ${MAX_VARS} variables; the formula has ${sorted.length}.`);
+  return{clauses,vars:sorted};
+}
+function getProblem(showError=true){
+  try{const p=parseCNF(F);if(showError)setInputError('');return p;}
+  catch(err){if(showError)setInputError(err.message);return null;}
+}
+function setInputError(message){const box=document.getElementById('inputError'),input=document.getElementById('fin');box.textContent=message;box.className='input-error'+(message?' show':'');input.className='fin'+(message?' err':'');}
+function toClique(p){const nodes=[],edges=[];p.clauses.forEach((c,ci)=>c.forEach(l=>nodes.push({clause:ci,lit:l,label:(l.ng?'¬':'')+l.v})));
+  for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){const a=nodes[i],b=nodes[j];if(a.clause===b.clause)continue;if(a.lit.v===b.lit.v&&a.lit.ng!==b.lit.ng)continue;edges.push([i,j]);}
+  return{nodes,edges,k:p.clauses.length};}
+function complementGraph(g){const n=g.nodes.length,edgeSet=new Set();g.edges.forEach(([i,j])=>edgeSet.add(`${i},${j}`));const edges=[];for(let i=0;i<n;i++)for(let j=i+1;j<n;j++)if(!edgeSet.has(`${i},${j}`))edges.push([i,j]);return{nodes:g.nodes,edges,k:g.k};}
+function literalValue(l,a){const value=a[l.v];return value===undefined?undefined:(l.ng?!value:value);}
+function clauseState(c,a){let open=false;for(const l of c){const v=literalValue(l,a);if(v===true)return'sat';if(v===undefined)open=true;}return open?'open':'dead';}
+function clauseStates(p,a){return p.clauses.map(c=>clauseState(c,a));}
+function countSat(p,a){return clauseStates(p,a).filter(x=>x==='sat').length;}
+function allAssigned(p,a){return p.vars.every(v=>a[v]!==undefined);}
+function witnessSet(g,a){const selected=new Set(),usedClauses=new Set();g.nodes.forEach((node,i)=>{if(!usedClauses.has(node.clause)&&literalValue(node.lit,a)===true){usedClauses.add(node.clause);selected.add(i);}});return selected;}
+function assignmentFromIndex(p,index){const out={};p.vars.forEach((v,j)=>{out[v]=(Math.floor(index/Math.pow(2,j))%2)===1;});return out;}
+function totalAssignments(p){return Math.pow(2,p.vars.length);}
+
+function upperBound(p,assignment){let sat=0,open=0;clauseStates(p,assignment).forEach(s=>{if(s==='sat')sat++;else if(s==='open')open++;});return sat+open;}
+function globalUpperBound(p){
+  if(sD)return inc>-Infinity?inc:0;
+  if(ALGO==='bf')return p.clauses.length;
+  const values=bbStack.map(n=>n.bound);if(inc>-Infinity)values.push(inc);return values.length?Math.max(...values):p.clauses.length;
+}
+function resetOldIncumbent(){if(incTreeId!==null&&bbTree[incTreeId]&&bbTree[incTreeId].status==='incumbent')bbTree[incTreeId].status='explored';}
+function updateIncumbent(score,assignment,treeId=null){if(score>inc){resetOldIncumbent();inc=score;incA={...assignment};incTreeId=treeId;if(treeId!==null&&bbTree[treeId])bbTree[treeId].status='incumbent';return true;}return false;}
+
+function bbInit(p){bbStack=[{depth:0,assignment:{},id:0,bound:p.clauses.length}];bbVisitedNodes=0;bbEvaluatedAssignments=0;bbPrunedAssignments=0;bbPruneCuts=0;bbTree=[{id:0,depth:0,parentId:-1,variable:'root',value:null,bound:p.clauses.length,satisfied:0,status:'pending',children:[]}];bbDone=false;}
+function bbAdvance(p){
+  if(bbStack.length===0)return{done:true,perfect:false};
+  const node=bbStack.pop(),tNode=bbTree[node.id];bbVisitedNodes++;if(tNode)tNode.status='explored';
+  if(node.depth===p.vars.length){
+    bbEvaluatedAssignments++;const score=countSat(p,node.assignment);if(tNode)tNode.satisfied=score;A={...node.assignment};updateIncumbent(score,node.assignment,node.id);
+    const perfect=score===p.clauses.length;if(perfect&&tNode)tNode.status='optimal';
+    return{done:perfect||bbStack.length===0,perfect};
+  }
+  const variable=p.vars[node.depth];
+  [true,false].forEach(value=>{
+    const assignment={...node.assignment,[variable]:value},depth=node.depth+1,bound=upperBound(p,assignment),childId=bbTree.length;
+    const child={id:childId,depth,parentId:node.id,variable,value,bound,satisfied:countSat(p,assignment),status:'pending',children:[]};
+    if(tNode)tNode.children.push(childId);bbTree.push(child);
+    if(bound<=inc){const remaining=p.vars.length-depth;bbPrunedAssignments+=Math.pow(2,remaining);bbPruneCuts++;child.status='pruned';}
+    else bbStack.push({depth,assignment,id:childId,bound});
+  });
+  A={...node.assignment};return{done:bbStack.length===0,perfect:false};
+}
+function finalizeSearch(p,perfect=false){
+  sD=true;sStop();if(incA)A={...incA};
+  if(incTreeId!==null&&bbTree[incTreeId])bbTree[incTreeId].status='optimal';
+  const result=document.getElementById('prr'),bar=document.getElementById('pb');
+  if(MODE==='sat'){
+    if(inc===p.clauses.length){result.className='pr sat';result.textContent=`SAT FOUND — ${p.clauses.length}/${p.clauses.length} clauses`;bar.className='pbar found';}
+    else{result.className='pr unsat';result.textContent=`UNSAT PROVED — no full satisfying assignment; MaxSAT = ${Math.max(0,inc)}/${p.clauses.length}`;bar.className='pbar exh';}
+  }else{
+    result.className='pr '+(inc===p.clauses.length?'sat':'unsat');result.textContent=perfect?`OPTIMAL CERTIFICATE — all ${p.clauses.length} clauses satisfied`:`OPTIMUM PROVED — MaxSAT = ${Math.max(0,inc)}/${p.clauses.length}`;bar.className=inc===p.clauses.length?'pbar found':'pbar exh';
+  }
+  render();updateProg(p);renderTree(p);showComparison(p);
+}
+
+function bfStep(p){
+  const total=totalAssignments(p);if(bfIdx>=total){finalizeSearch(p,false);return false;}
+  A=assignmentFromIndex(p,bfIdx);const score=countSat(p,A);bfIdx++;bfEvaluated++;updateIncumbent(score,A,null);render();updateProg(p);
+  if(score===p.clauses.length){finalizeSearch(p,true);return true;}
+  if(bfIdx>=total){finalizeSearch(p,false);return false;}
+  return null;
+}
+function bbStepWrap(p){
+  if(bbDone){finalizeSearch(p,inc===p.clauses.length);return false;}
+  if(bbStack.length===0&&bbVisitedNodes===0)bbInit(p);
+  const outcome=bbAdvance(p);render();renderTree(p);updateProg(p);
+  if(outcome.done){bbDone=true;finalizeSearch(p,outcome.perfect);return outcome.perfect;}
+  return null;
+}
+function sStep(){const p=getProblem();if(!p)return false;if(sD)sReset(false);return ALGO==='bf'?bfStep(p):bbStepWrap(p);}
+function sAuto(){if(sRn)return;const p=getProblem();if(!p)return;if(sD)sReset(false);sRn=true;document.getElementById('ab').textContent='▶…';document.getElementById('prog').className='prog show';const tick=()=>{if(!sRn)return;const r=sStep();if(r!==null){sRn=false;document.getElementById('ab').textContent='▶ Auto';return;}sT=setTimeout(tick,101-parseInt(document.getElementById('sp').value,10));};tick();}
+function sStop(){sRn=false;if(sT){clearTimeout(sT);sT=null;}document.getElementById('ab').textContent='▶ Auto';}
+function sReset(doRender=true){sStop();lambdaCache={key:null,value:null};bfIdx=0;bfEvaluated=0;sD=false;A={};inc=-Infinity;incA=null;incTreeId=null;bbStack=[];bbVisitedNodes=0;bbEvaluatedAssignments=0;bbPrunedAssignments=0;bbPruneCuts=0;bbTree=[];bbDone=false;document.getElementById('prog').className='prog';document.getElementById('treeBox').style.display='none';document.getElementById('cmpBox').style.display='none';if(doRender)render();}
+
+function runBruteForceSilent(p){let best=-Infinity,bestA=null,evaluated=0;const total=totalAssignments(p);for(let i=0;i<total;i++){const a=assignmentFromIndex(p,i),score=countSat(p,a);evaluated++;if(score>best){best=score;bestA=a;}if(score===p.clauses.length)break;}return{optimum:best,bestA,evaluated,visited:evaluated,pruned:0,total};}
+function runBBSilent(p){let best=-Infinity,bestA=null,visited=0,evaluated=0,pruned=0,stack=[{depth:0,assignment:{},bound:p.clauses.length}],perfect=false;while(stack.length){const node=stack.pop();visited++;if(node.depth===p.vars.length){evaluated++;const score=countSat(p,node.assignment);if(score>best){best=score;bestA=node.assignment;}if(score===p.clauses.length){perfect=true;break;}continue;}const variable=p.vars[node.depth];[true,false].forEach(value=>{const assignment={...node.assignment,[variable]:value},depth=node.depth+1,bound=upperBound(p,assignment);if(bound<=best)pruned+=Math.pow(2,p.vars.length-depth);else stack.push({depth,assignment,bound});});}return{optimum:best,bestA,evaluated,visited,pruned,total:totalAssignments(p),perfect};}
+function showComparison(p){if(!sD)return;const bf=runBruteForceSilent(p),bb=runBBSilent(p),box=document.getElementById('cmpBox');box.style.display='grid';document.getElementById('cmpBF').textContent=bf.evaluated;document.getElementById('cmpBB').textContent=bb.evaluated;document.getElementById('cmpBFSub').textContent=`${bf.evaluated}/${bf.total} assignments; no navigation nodes`;const saved=Math.max(0,Math.round((1-bb.evaluated/Math.max(1,bf.total))*100));document.getElementById('cmpBBSub').textContent=`${bb.visited} tree nodes; ${bb.pruned} assignments pruned; ${saved}% fewer full evaluations vs 2ⁿ`;}
+
+function updateProg(p){
+  const total=totalAssignments(p),closed=ALGO==='bf'?bfEvaluated:bbEvaluatedAssignments+bbPrunedAssignments;let pct=(closed/Math.max(1,total))*100;if(sD)pct=100;pct=Math.min(100,pct);
+  document.getElementById('prog').className='prog show';
+  const ceilingCertificate=sD&&inc===p.clauses.length&&closed<total;
+  document.getElementById('ps').textContent=ceilingCertificate?'Proof complete':ALGO==='bf'?`Evaluated ${bfEvaluated}`:`Closed ${closed}`;
+  document.getElementById('pt').textContent=ceilingCertificate?`${closed}/${total} assignments explicitly closed`:`of ${total} assignments`;
+  document.getElementById('pb').style.width=pct+'%';if(!sD)document.getElementById('pb').className='pbar srch';document.getElementById('pc').textContent=p.vars.map(v=>`${v}=${A[v]===undefined?'?':A[v]?'T':'F'}`).join(' ');
+  document.getElementById('pf').textContent=ALGO==='bb'?`Best:${inc>-Infinity?inc:'—'} UB:${globalUpperBound(p)} visited:${bbVisitedNodes} pruned:${bbPrunedAssignments}`:`Best:${inc>-Infinity?inc:'—'} evaluated:${bfEvaluated}`;
+  if(!sD){document.getElementById('prr').className='pr srch';document.getElementById('prr').textContent=`${Math.round(pct)}% of assignment space closed`;}
+}
+
+function proofGapMax(best,upper){if(best===null||best===undefined||best===-Infinity)return null;if(upper<=0)return 0;return Math.max(0,Math.round(((upper-best)/upper)*100));}
+function renderMaxDash(id,current,best,upper,label){const el=document.getElementById(id);if(!el)return;const gap=proofGapMax(best,upper),work=ALGO==='bb'?bbVisitedNodes:bfEvaluated,workLabel=ALGO==='bb'?'Visited nodes':'Assignments';const curClass=current===upper&&upper>=0?'obj-sat':current>0?'obj-partial':'obj-fail';el.innerHTML=`<div class="odash"><div class="ocard ${curClass}"><div class="ov">${current}</div><div class="ol">${label}</div></div><div class="ocard ${best>-Infinity?'obj-partial':'obj-na'}"><div class="ov">${best>-Infinity?best:'—'}</div><div class="ol">Best lower bound</div></div><div class="ocard obj-na"><div class="ov">${gap===null?'—':gap+'%'}</div><div class="ol">Optimality gap</div></div><div class="ocard obj-na"><div class="ov">${work}</div><div class="ol">${workLabel}</div></div></div>`;}
+function renderMinDash(id,current,best,lower,label){const el=document.getElementById(id);if(!el)return;let gap=null;if(best!==null)gap=best<=0?0:Math.max(0,Math.round(((best-lower)/best)*100));const work=ALGO==='bb'?bbVisitedNodes:bfEvaluated,workLabel=ALGO==='bb'?'Visited nodes':'Assignments';el.innerHTML=`<div class="odash"><div class="ocard ${best!==null&&current===best?'obj-sat':'obj-partial'}"><div class="ov">${current}</div><div class="ol">${label}</div></div><div class="ocard ${best!==null?'obj-partial':'obj-na'}"><div class="ov">${best!==null?best:'—'}</div><div class="ol">Best upper bound</div></div><div class="ocard obj-na"><div class="ov">${gap===null?'—':gap+'%'}</div><div class="ol">Optimality gap</div></div><div class="ocard obj-na"><div class="ov">${work}</div><div class="ol">${workLabel}</div></div></div>`;}
+
+function layoutGraph(g,W,H){const nodes=g.nodes;if(!nodes.length)return[];const clauseCount=Math.max(...nodes.map(n=>n.clause))+1,pos=[],cx=W/2,cy=H/2,R=Math.min(W,H)*.32,groups={};nodes.forEach((n,i)=>{(groups[n.clause]??=[]).push(i);});Object.entries(groups).forEach(([ci,ids])=>{const angle=(parseInt(ci,10)/clauseCount)*2*Math.PI-Math.PI/2,gx=cx+R*Math.cos(angle),gy=cy+R*Math.sin(angle),spacing=Math.min(19,125/ids.length);ids.forEach((idx,li)=>{const offset=(li-(ids.length-1)/2)*spacing,perp=angle+Math.PI/2;pos[idx]={x:gx+offset*Math.cos(perp),y:gy+offset*Math.sin(perp)};});});return pos;}
+function drawGraph(svgId,g,pos,highlight,highlightColor,idleColor,edgeMode='both'){let html='';g.edges.forEach(([i,j])=>{const active=edgeMode==='any'?(highlight.has(i)||highlight.has(j)):(highlight.has(i)&&highlight.has(j));html+=`<line x1="${pos[i]?.x}" y1="${pos[i]?.y}" x2="${pos[j]?.x}" y2="${pos[j]?.y}" stroke="${active?highlightColor:idleColor}" stroke-width="${active?2:.4}" opacity="${active?.82:.13}"/>`;});g.nodes.forEach((node,i)=>{const active=highlight.has(i),color=CC[node.clause%CC.length];html+=`<circle cx="${pos[i]?.x}" cy="${pos[i]?.y}" r="${active?9:5}" fill="${active?color:'#1E293B'}" stroke="${color}" stroke-width="${active?2:.6}" opacity="${active?1:.35}"/>`;html+=`<text x="${pos[i]?.x}" y="${pos[i]?.y}" text-anchor="middle" dominant-baseline="central" fill="${active?'#fff':'#94A3B8'}" font-size="7" font-weight="${active?850:500}" font-family="ui-monospace,monospace">${node.label}</text>`;});document.getElementById(svgId).innerHTML=html;}
+
+function renderTree(p){
+  const box=document.getElementById('treeBox');if(ALGO!=='bb'||bbTree.length<1){box.style.display='none';return;}box.style.display='block';const svg=document.getElementById('treeSvg'),W=340,H=175,maxDepth=p.vars.length;
+  if(maxDepth>10||bbTree.length>700){svg.innerHTML=`<text x="170" y="82" text-anchor="middle" fill="#94A3B8" font-size="9">Tree drawing hidden at this scale</text><text x="170" y="99" text-anchor="middle" fill="#64748B" font-size="7">Counters remain exact.</text>`;updateTreeStats();return;}
+  const positions={};function place(id,x,y,spread){positions[id]={x,y};const node=bbTree[id];if(!node)return;node.children.forEach((cid,i)=>place(cid,x+(i===0?-1:1)*spread,y+H/(maxDepth+2),spread/2.15));}place(0,W/2,16,W/3);let html='';bbTree.forEach(node=>{if(node.parentId>=0&&positions[node.id]&&positions[node.parentId]){const a=positions[node.parentId],b=positions[node.id],color=node.status==='pruned'?'#F8717155':node.status==='incumbent'?'#F59E0B':node.status==='optimal'?'#4ADE80':'#334155';html+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${color}" stroke-width="1.5"/>`;}});
+  bbTree.forEach(node=>{const pos=positions[node.id];if(!pos)return;const colors={pending:'#334155',explored:'#8B5CF6',pruned:'#F87171',incumbent:'#F59E0B',optimal:'#4ADE80'},color=colors[node.status]||'#334155',r=node.depth===0?8:node.status==='pruned'?4:5;html+=`<circle cx="${pos.x}" cy="${pos.y}" r="${r}" fill="${color}" opacity="${node.status==='pending'?.35:1}"/>`;if(node.status==='pruned'){html+=`<line x1="${pos.x-3}" y1="${pos.y-3}" x2="${pos.x+3}" y2="${pos.y+3}" stroke="#FCA5A5" stroke-width="1.5"/><line x1="${pos.x+3}" y1="${pos.y-3}" x2="${pos.x-3}" y2="${pos.y+3}" stroke="#FCA5A5" stroke-width="1.5"/>`;}if(node.depth>0)html+=`<text x="${pos.x}" y="${pos.y-8}" text-anchor="middle" fill="${color}" font-size="6" font-weight="800" font-family="monospace">${node.value?'T':'F'}</text>`;if(node.depth>0&&node.depth<maxDepth&&node.status!=='pending')html+=`<text x="${pos.x}" y="${pos.y+12}" text-anchor="middle" fill="#64748B" font-size="5" font-family="monospace">UB ${node.bound}</text>`;});
+  for(let d=0;d<maxDepth;d++){const y=16+(d+1)*(H/(maxDepth+2));html+=`<text x="3" y="${y+2}" fill="#64748B" font-size="6" font-family="monospace">${p.vars[d]}</text>`;}svg.innerHTML=html;updateTreeStats();
+}
+function updateTreeStats(){document.getElementById('tsVisited').textContent=bbVisitedNodes;document.getElementById('tsLeaves').textContent=bbEvaluatedAssignments;document.getElementById('tsPruned').textContent=bbPrunedAssignments;document.getElementById('tsInc').textContent=inc>-Infinity?inc:'—';}
+
+
+// ═══════════════════════════════════════════════════════════════
+// RESTORED Λ / PHASE / COMPRESSION LAYER
+// ═══════════════════════════════════════════════════════════════
+function solutionMetrics(p){
+  const key=F+'|'+p.vars.join(',');if(lambdaCache.key===key)return lambdaCache.value;
+  const n=p.vars.length,total=totalAssignments(p);
+  if(n>16){const value={enumerated:false,n,total};lambdaCache={key,value};return value;}
+  let solutions=0;for(let i=0;i<total;i++)if(countSat(p,assignmentFromIndex(p,i))===p.clauses.length)solutions++;
+  const compression=solutions>0?total/solutions:Infinity;
+  const Lambda=solutions>0?Math.log(compression):Infinity,P=n>0?1/n:0,product=Lambda*P;
+  let phase;if(solutions===0)phase='UNSAT';else if(solutions===total)phase='OPEN';else if(compression<2)phase='LOW LOAD';else if(compression<16)phase='LIVING';else phase='COMPRESSED';
+  const value={enumerated:true,n,total,solutions,compression,Lambda,P,product,phase};lambdaCache={key,value};return value;
+}
+function renderLambda(p){
+  const m=solutionMetrics(p),lv1=document.getElementById('lv1'),lv2=document.getElementById('lv2'),lv3=document.getElementById('lv3'),rl=document.getElementById('rl'),nc=document.getElementById('ncw');
+  if(!m.enumerated){lv1.textContent='—';lv2.textContent='>2¹⁶';lv3.textContent='NOT ENUM.';lv1.style.color='#64748B';lv3.style.color='#FBBF24';rl.textContent='Exact Λ census paused above 16 variables; search counters remain exact.';rl.className='rl rl-w';}
+  else{lv1.textContent=isFinite(m.Lambda)?m.Lambda.toFixed(3):'∞';lv2.textContent=isFinite(m.compression)?(m.compression>=1e4?m.compression.toExponential(1):m.compression.toFixed(1)+'×'):'∞';lv3.textContent=m.phase;const phaseColor={UNSAT:'#F87171',OPEN:'#38BDF8','LOW LOAD':'#A78BFA',LIVING:'#4ADE80',COMPRESSED:'#FBBF24'};lv1.style.color=isFinite(m.Lambda)?'#4ADE80':'#F87171';lv3.style.color=phaseColor[m.phase]||'#94A3B8';if(isFinite(m.product)){rl.textContent=`Λ·P = ${m.product.toFixed(3)} ${m.product<=CB?'≤':'>'} C = ${CB.toFixed(3)} · #SAT=${m.solutions}/${m.total}`;rl.className='rl '+(m.product<=CB?'rl-ok':'rl-v');}else{rl.textContent='Λ = ∞ — no satisfying assignment';rl.className='rl rl-v';}}
+  if(p.vars.length>=NC){nc.className='ncw show';nc.textContent=`⚠ n=${p.vars.length} ≥ n_crit≈${NC.toFixed(2)} — exhaustive space = 2^${p.vars.length} = ${totalAssignments(p).toLocaleString()}`;}else nc.className='ncw';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXACT SUBSET SUM / KNAPSACK ENCODING
+// ═══════════════════════════════════════════════════════════════
+function slackParts(maxSum){const parts=[];let power=1,remaining=maxSum;while(remaining>0){const take=Math.min(power,remaining);parts.push(take);remaining-=take;power*=2;}return parts;}
+function chooseSubsetValues(values,target){const dp=new Map([[0,[]]]);values.forEach((v,i)=>{[...dp.entries()].forEach(([s,ids])=>{const ns=s+v;if(ns<=target&&!dp.has(ns))dp.set(ns,[...ids,i]);});});return dp.get(target)||null;}
+function uniqueLiteralCount(c){return new Set(c.map(l=>(l.ng?'!':'')+l.v)).size;}
+function buildExactSubsetSum(p){
+  const n=p.vars.length,m=p.clauses.length,maxWidth=Math.max(1,...p.clauses.map(uniqueLiteralCount)),clauseTarget=maxWidth+1,dim=n+m,items=[];
+  p.vars.forEach((v,vi)=>{[false,true].forEach(ng=>{const digits=new Array(dim).fill(0);digits[vi]=1;p.clauses.forEach((c,ci)=>{if(c.some(l=>l.v===v&&l.ng===ng))digits[n+ci]=1;});items.push({id:`${ng?'F':'T'}:${v}`,label:(ng?'¬':'')+v,type:'literal',literal:{v,ng},digits});});});
+  const slackValues=slackParts(clauseTarget-1);p.clauses.forEach((_,ci)=>slackValues.forEach((value,si)=>{const digits=new Array(dim).fill(0);digits[n+ci]=value;items.push({id:`S:${ci}:${si}`,label:`s${ci+1}.${si+1}`,type:'slack',clause:ci,slackValue:value,digits});}));
+  const target=[...new Array(n).fill(1),...new Array(m).fill(clauseTarget)];return{n,m,dim,maxWidth,clauseTarget,slackValues,items,target,labels:[...p.vars,...p.clauses.map((_,i)=>'C'+(i+1))],base:Math.max(10,2*clauseTarget+1)};
+}
+function exactSubsetSelection(p,a,model){
+  const selected=new Set();model.items.forEach((item,i)=>{if(item.type==='literal'&&literalValue(item.literal,a)===true)selected.add(i);});
+  if(allAssigned(p,a)){p.clauses.forEach((c,ci)=>{const trueCount=new Set(c.filter(l=>literalValue(l,a)===true).map(l=>(l.ng?'!':'')+l.v)).size,need=model.clauseTarget-trueCount,slacks=model.items.map((x,i)=>({x,i})).filter(z=>z.x.type==='slack'&&z.x.clause===ci);const choice=trueCount>0?chooseSubsetValues(slacks.map(z=>z.x.slackValue),need):null;if(choice)choice.forEach(local=>selected.add(slacks[local].i));});}
+  const sum=new Array(model.dim).fill(0);selected.forEach(i=>model.items[i].digits.forEach((d,j)=>sum[j]+=d));return{selected,sum,exact:sum.every((x,i)=>x===model.target[i])};
+}
+function vectorText(d){return d.join('·');}
+function digitsToBigInt(digits,base){let x=0n,b=BigInt(base);digits.forEach(d=>{x=x*b+BigInt(d);});return x;}
+function shortBig(x){const s=x.toString();return s.length<=18?s:s.slice(0,8)+'…'+s.slice(-6);}
+function renderSubsetSum(p,score,upper){
+  const model=buildExactSubsetSum(p),sel=exactSubsetSelection(p,A,model);document.getElementById('ssb').textContent=`${model.items.length} items · base ${model.base} · target digits 1/${model.clauseTarget}`;
+  let h='<table class="ss-table"><tr><th>Item</th><th>Use</th><th class="ss-vector">digit vector</th><th>encoded</th></tr>';model.items.forEach((item,i)=>{const on=sel.selected.has(i),num=digitsToBigInt(item.digits,model.base);h+=`<tr class="${on?'ss-sel':'ss-unsel'}"><td>${item.label}</td><td>${on?'✓':''}</td><td class="ss-vector">${vectorText(item.digits)}</td><td>${shortBig(num)}</td></tr>`;});const targetNum=digitsToBigInt(model.target,model.base);h+=`<tr><td><b>Σ</b></td><td></td><td class="${sel.exact?'ss-hit':'ss-miss'} ss-vector">${vectorText(sel.sum)}</td><td>${shortBig(digitsToBigInt(sel.sum,model.base))}</td></tr><tr><td style="color:#FBBF24"><b>T</b></td><td></td><td class="ss-vector" style="color:#FBBF24">${vectorText(model.target)}</td><td style="color:#FBBF24">${shortBig(targetNum)}</td></tr></table>`;document.getElementById('ssBody').innerHTML=h;renderMaxDash('ssDash',score,inc,upper,'Clauses encoded');
+}
+function renderKnapsack(p,score,upper){
+  const model=buildExactSubsetSum(p),sel=exactSubsetSelection(p,A,model),targetNum=digitsToBigInt(model.target,model.base),sumNum=digitsToBigInt(sel.sum,model.base);document.getElementById('ksb').textContent=`${model.items.length} items · capacity T=${shortBig(targetNum)}`;
+  let h='<table class="ss-table"><tr><th>Item</th><th>Use</th><th>Weight</th><th>Value</th></tr>';model.items.forEach((item,i)=>{const on=sel.selected.has(i),num=digitsToBigInt(item.digits,model.base);h+=`<tr class="${on?'ss-sel':'ss-unsel'}"><td>${item.label}</td><td>${on?'✓':''}</td><td>${shortBig(num)}</td><td>${shortBig(num)}</td></tr>`;});h+=`<tr><td><b>TOTAL</b></td><td></td><td class="${sumNum<=targetNum?'ss-hit':'ss-miss'}">${shortBig(sumNum)} ≤ ${shortBig(targetNum)}</td><td class="${sumNum===targetNum?'ss-hit':'ss-miss'}">${shortBig(sumNum)} ${sumNum===targetNum?'=':'≠'} ${shortBig(targetNum)}</td></tr></table>`;document.getElementById('ksBody').innerHTML=h;renderMaxDash('knapDash',score,inc,upper,'Clause value');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXACT 3-SAT → 3-COLORING CLAUSE GADGET
+// ═══════════════════════════════════════════════════════════════
+const COLOR_SOLUTIONS={'000':[1,2,0,1,2,1],'001':[1,2,2,1,0,2],'010':[1,2,0,2,2,1],'011':[2,1,1,2,0,2],'100':[1,2,0,1,2,1],'101':[1,2,2,1,0,2],'110':[1,2,0,2,2,1]};
+function paddedClause(c){if(c.length===0)return null;if(c.length>3)return null;const out=c.slice();while(out.length<3)out.push(out[out.length-1]);return out;}
+function setColorClause(i){colorClause=i;render();}
+function renderColoring(p,score,upper){
+  const tabs=document.getElementById('colorClauseTabs');tabs.innerHTML='';p.clauses.forEach((_,i)=>{const b=document.createElement('button');b.textContent='C'+(i+1);b.className=i===Math.min(colorClause,p.clauses.length-1)?'on':'';b.onclick=()=>setColorClause(i);tabs.appendChild(b);});if(!p.clauses.length){document.getElementById('colorSvg').innerHTML='';return;}colorClause=Math.min(colorClause,p.clauses.length-1);const c=paddedClause(p.clauses[colorClause]);document.getElementById('colorb').textContent=c?`clause C${colorClause+1} · 6-node OR gadget`:'requires clause width ≤3';
+  if(!c){document.getElementById('colorSvg').innerHTML='<text x="170" y="105" text-anchor="middle" fill="#FBBF24" font-size="9">Long clause: convert to 3-CNF chain before coloring.</text>';document.getElementById('colorNote').innerHTML='The displayed formal gadget accepts clauses of width 1–3 (short clauses are padded by repetition).';renderMaxDash('colorDash',score,inc,upper,'Extendable clauses');return;}
+  const vals=c.map(l=>literalValue(l,A)),full=vals.every(v=>v!==undefined),key=full?vals.map(v=>v?0:1).join(''):null,sol=key?COLOR_SOLUTIONS[key]:null,colors=['#4ADE80','#F87171','#38BDF8'],nodes={T:[38,28],F:[95,28],B:[152,28],t1:[48,198],t2:[170,198],t3:[292,198],a:[72,78],b:[60,132],u:[170,64],d:[170,126],e:[268,78],f:[280,132]},edges=[['T','F'],['F','B'],['B','T'],['t1','B'],['t2','B'],['t3','B'],['a','b'],['b','t1'],['b','T'],['a','u'],['a','T'],['u','d'],['u','e'],['d','T'],['d','t2'],['e','f'],['f','t3'],['f','T'],['e','F']];
+  const nodeColor={T:0,F:1,B:2};if(full){nodeColor.t1=vals[0]?0:1;nodeColor.t2=vals[1]?0:1;nodeColor.t3=vals[2]?0:1;if(sol){['a','b','u','d','e','f'].forEach((n,i)=>nodeColor[n]=sol[i]);}}let h='<defs><marker id="arr3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#64748B"/></marker></defs>';edges.forEach(([x,y])=>{const a=nodes[x],b=nodes[y];h+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#475569" stroke-width="1.2" opacity=".65"/>`;});Object.entries(nodes).forEach(([name,pos])=>{const ci=nodeColor[name],fill=ci===undefined?'#1E293B':colors[ci],stroke=ci===undefined?'#64748B':'#E2E8F0',label=name.startsWith('t')?(c[parseInt(name[1])-1].ng?'¬':'')+c[parseInt(name[1])-1].v:name;h+=`<circle cx="${pos[0]}" cy="${pos[1]}" r="${name.startsWith('t')?12:10}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/><text x="${pos[0]}" y="${pos[1]+3}" text-anchor="middle" fill="${ci===undefined?'#94A3B8':'#020617'}" font-size="${name.startsWith('t')?7:8}" font-weight="850" class="svg-label">${label}</text>`;});document.getElementById('colorSvg').innerHTML=h;
+  const status=!full?'Assign all variables to extend the coloring.':sol?'Clause gadget extends to a proper 3-coloring ✓':'All three literals are F: no extension exists ✗';document.getElementById('colorNote').innerHTML=`<b style="color:${sol?'#4ADE80':full?'#F87171':'#FBBF24'}">${status}</b> T, F and B are forced to different colors; each literal vertex is restricted to T/F by its edge to B.`;renderMaxDash('colorDash',score,inc,upper,'Extendable clauses');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DIRECTED HAMILTONIAN CERTIFICATE VIEW
+// ═══════════════════════════════════════════════════════════════
+function renderHamiltonian(p,score,upper){
+  const svg=document.getElementById('hamSvg'),n=p.vars.length,m=p.clauses.length;if(!n){svg.innerHTML='';return;}const W=340,H=230,left=35,right=305,top=35,rowGap=Math.min(34,(H-70)/Math.max(1,n)),cols=Math.max(4,2*m+2),dx=(right-left)/(cols-1),positions={},routeEdges=[],baseEdges=[],candidateEdges=[],clausePos={};
+  const full=allAssigned(p,A),witnessByClause={};if(full)p.clauses.forEach((c,ci)=>{const lit=c.find(l=>literalValue(l,A)===true);if(lit)witnessByClause[ci]=lit;});
+  p.vars.forEach((v,vi)=>{const y=top+vi*rowGap;for(let k=0;k<cols;k++){positions[`${vi}:${k}`]=[left+k*dx,y];if(k<cols-1){baseEdges.push([[left+k*dx,y],[left+(k+1)*dx,y]]);}}});
+  p.clauses.forEach((c,ci)=>{clausePos[ci]=[left+(2*ci+1.5)*dx,Math.max(12,top-20+(ci%2)*10)];c.forEach(l=>{const vi=p.vars.indexOf(l.v);if(vi<0)return;const a=positions[`${vi}:${2*ci+1}`],b=positions[`${vi}:${2*ci+2}`],cp=clausePos[ci];candidateEdges.push(l.ng?[b,cp,a]:[a,cp,b]);});});
+  if(full){let previous=[170,214];p.vars.forEach((v,vi)=>{const truth=A[v],order=truth?[...Array(cols).keys()]:[...Array(cols).keys()].reverse(),entry=positions[`${vi}:${order[0]}`];routeEdges.push([previous,entry]);for(let q=0;q<order.length-1;q++){const k=order[q],kn=order[q+1],ci=Math.floor((Math.min(k,kn)-1)/2),isClausePair=Math.min(k,kn)>=1&&Math.min(k,kn)%2===1&&ci>=0&&ci<m,w=witnessByClause[ci];if(isClausePair&&w&&w.v===v&&w.ng===!truth){const cp=clausePos[ci];routeEdges.push([positions[`${vi}:${k}`],cp],[cp,positions[`${vi}:${kn}`]]);}else routeEdges.push([positions[`${vi}:${k}`],positions[`${vi}:${kn}`]]);}previous=positions[`${vi}:${order[order.length-1]}`];});routeEdges.push([previous,[170,214]],[[170,214],[170,214]]);}
+  let h='<defs><marker id="arrH" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 z" fill="#34D399"/></marker><marker id="arrIdle" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 z" fill="#475569"/></marker></defs>';baseEdges.forEach(([a,b])=>{h+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#334155" stroke-width="1" opacity=".5"/>`;});candidateEdges.forEach(path=>{h+=`<polyline points="${path.map(z=>z.join(',')).join(' ')}" fill="none" stroke="#475569" stroke-width=".7" stroke-dasharray="2 2" opacity=".38"/>`;});routeEdges.forEach(([a,b])=>{if(a[0]===b[0]&&a[1]===b[1])return;h+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#34D399" stroke-width="2" marker-end="url(#arrH)" opacity=".9"/>`;});p.vars.forEach((v,vi)=>{for(let k=0;k<cols;k++){const [x,y]=positions[`${vi}:${k}`];h+=`<circle cx="${x}" cy="${y}" r="3.2" fill="${full?'#60A5FA':'#1E293B'}" stroke="#60A5FA" stroke-width=".7"/><text x="6" y="${y+3}" fill="#94A3B8" font-size="7" class="svg-label">${v}${full?'='+(A[v]?'T':'F'):''}</text>`;}});p.clauses.forEach((_,ci)=>{const [x,y]=clausePos[ci],visited=Boolean(witnessByClause[ci]);h+=`<rect x="${x-8}" y="${y-7}" width="16" height="14" rx="3" fill="${visited?'#065F46':'#450A0A'}" stroke="${visited?'#4ADE80':'#F87171'}"/><text x="${x}" y="${y+3}" text-anchor="middle" fill="#fff" font-size="6" font-weight="850" class="svg-label">C${ci+1}</text>`;});h+=`<circle cx="170" cy="214" r="7" fill="#7C3AED"/><text x="170" y="217" text-anchor="middle" fill="#fff" font-size="7" font-weight="850">s/t</text>`;svg.innerHTML=h;
+  const visited=Object.keys(witnessByClause).length,cycle=full&&visited===m;document.getElementById('hamb').textContent=`${n} variable chains · ${m} clause detours`;document.getElementById('hamNote').innerHTML=cycle?'<b class="exact-inline">Hamiltonian certificate ✓</b> The highlighted directed route visits every chain node and every clause node once, then closes.':full?`<b style="color:#F87171">No certificate for this assignment.</b> ${m-visited} clause node(s) remain unvisited.`:'Assign all variables to choose each chain direction and expose clause detours.';renderMaxDash('hamDash',score,inc,upper,'Clause detours');
+}
+
+function renderSummary(p,score){const total=totalAssignments(p),closed=ALGO==='bf'?bfEvaluated:bbEvaluatedAssignments+bbPrunedAssignments,metrics=solutionMetrics(p);document.getElementById('sg').innerHTML=[{v:p.vars.length,l:'VARIABLES'},{v:total.toLocaleString(),l:'2ⁿ ASSIGNMENTS'},{v:'≈'+NC.toFixed(2),l:'n_crit'},{v:metrics.enumerated?metrics.solutions:'—',l:'#SAT SOLUTIONS'}].map(x=>`<div class="sc"><div class="sv">${x.v}</div><div class="sn">${x.l}</div></div>`).join('');}
+
+function genR(nv){const vars=Array.from({length:nv},(_,i)=>'x'+(i+1)),clauseCount=Math.max(2,Math.floor(nv*1.5)),clauses=[];for(let c=0;c<clauseCount;c++){const literals=[],used=new Set();for(let l=0;l<Math.min(3,nv);l++){let idx;do{idx=Math.floor(Math.random()*nv);}while(used.has(idx));used.add(idx);literals.push((Math.random()<.5?'¬':'')+vars[idx]);}clauses.push('('+literals.join(' ∨ ')+')');}F=clauses.join(' ∧ ');document.getElementById('fin').value=F;sReset();}
+
+function render(){
+  const p=getProblem();if(!p){document.getElementById('vb').innerHTML='';document.getElementById('cll').innerHTML='';return;}const g=toClique(p),gc=complementGraph(g),witness=witnessSet(g,A),allVertices=new Set(g.nodes.map((_,i)=>i)),cover=new Set([...allVertices].filter(i=>!witness.has(i))),pos=layoutGraph(g,340,180),score=countSat(p,A),upper=globalUpperBound(p);
+  renderLambda(p);renderSummary(p,score);
+  document.getElementById('sb').textContent=`${p.vars.length} variables · ${p.clauses.length} clauses`;document.getElementById('kb').textContent=`|V|=${g.nodes.length}, target k=${g.k}`;document.getElementById('ib').textContent=`|E(Ḡ)|=${gc.edges.length}`;const bestCover=inc>-Infinity?g.nodes.length-inc:null;document.getElementById('vcb').textContent=sD&&bestCover!==null?`τ*=${bestCover}`:bestCover!==null?`best τ≤${bestCover}`:`|V|=${g.nodes.length}`;
+  const vb=document.getElementById('vb');vb.innerHTML='';p.vars.forEach(v=>{const b=document.createElement('button');b.className='vb '+(A[v]===undefined?'u':A[v]?'t':'f');b.textContent=`${v}=${A[v]===undefined?'?':A[v]?'T':'F'}`;b.onclick=()=>{if(!sRn){if(A[v]===undefined)A[v]=true;else if(A[v])A[v]=false;else delete A[v];render();}};vb.appendChild(b);});
+  const states=clauseStates(p,A),cll=document.getElementById('cll');cll.innerHTML='';p.clauses.forEach((c,ci)=>{const state=states[ci],row=document.createElement('div');row.className='cr '+(state==='sat'?'s':state==='open'?'o':'n');row.style.borderLeft=`3px solid ${CC[ci%CC.length]}55`;let html=`<span style="color:${CC[ci%CC.length]};font-weight:850;font-size:9px;min-width:18px">C${ci+1}</span><span class="ct">`;if(c.length===0)html+='<span class="lf">∅</span>';c.forEach((l,li)=>{if(li)html+='<span style="color:#475569"> ∨ </span>';const value=literalValue(l,A),cls=value===true?'lt':value===false?'lf':'lopen';html+=`<span class="${cls}">${l.ng?'¬':''}${l.v}</span>`;});html+=`</span><span class="ci">${state==='sat'?'✓':state==='open'?'?':'✗'}</span>`;row.innerHTML=html;cll.appendChild(row);});
+  renderMaxDash('satDash',score,inc,upper,MODE==='sat'?'Clauses SAT':'Current score');
+  if(curTab===0){drawGraph('ksvg',g,pos,witness,'#4ADE80','#1E293B','both');renderMaxDash('kDash',witness.size,inc,upper,'Clique size');}
+  else if(curTab===1){drawGraph('isvg',gc,pos,witness,'#10B981','#334155','both');renderMaxDash('iDash',witness.size,inc,upper,'IS size');}
+  else if(curTab===2){drawGraph('vcsvg',gc,pos,cover,'#F59E0B','#334155','any');const lower=g.nodes.length-upper;renderMinDash('vcDash',cover.size,bestCover,lower,'Cover size');}
+  else if(curTab===3)renderColoring(p,score,upper);
+  else if(curTab===4)renderHamiltonian(p,score,upper);
+  else if(curTab===5)renderSubsetSum(p,score,upper);
+  else if(curTab===6)renderKnapsack(p,score,upper);
+  const modeText=MODE==='sat'?`<b style="color:#60A5FA">SAT DECISION:</b> stop when a full satisfying assignment is found; otherwise exhaust the proof and report UNSAT.`:`<b style="color:#FB923C">MAXSAT:</b> maximize satisfied clauses. A zero optimality gap certifies the optimum even when the formula is UNSAT.`;
+  const algoText=ALGO==='bb'?` <b style="color:#34D399">B&amp;B:</b> UB = SAT + OPEN. Prune when UB ≤ incumbent; progress counts evaluated plus rigorously pruned complete assignments.`:` <b style="color:#A78BFA">BRUTE FORCE:</b> test complete assignments in fixed order, stopping early only at the theoretical ceiling (${p.clauses.length}).`;document.getElementById('nt').innerHTML=modeText+algoText;
+}
+
+const exs=document.getElementById('exs');EX.forEach((example,i)=>{const b=document.createElement('button');b.textContent=example.n;b.className=i===0?'on':'';b.onclick=()=>{F=example.f;document.getElementById('fin').value=F;sReset();exs.querySelectorAll('button').forEach((x,j)=>x.className=j===i?'on':'');};exs.appendChild(b);});
+document.getElementById('fin').value=F;document.getElementById('fin').addEventListener('input',function(){F=this.value;sReset();});
+window.NPOptimizationLabTest={parseCNF,toClique,complementGraph,countSat,witnessSet,upperBound,runBruteForceSilent,runBBSilent,assignmentFromIndex,buildExactSubsetSum,exactSubsetSelection,paddedClause,COLOR_SOLUTIONS,solutionMetrics};
+render();
+</script>
+</body>
+</html>
